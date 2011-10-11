@@ -1,5 +1,8 @@
+import BeautifulSoup
+import re
+
 def FilterListBySuffix(items, suffixes):
-    """Filters a list .
+    """Filters a list.
 
     Arguments:
       items -- a list of strings.
@@ -15,3 +18,22 @@ def FilterListBySuffix(items, suffixes):
                 new_list.append(item)
                 continue
     return new_list
+
+def GetLinksFromHtml(file_handle):
+    """Returns a list with all the links contained in a HTML file.
+
+    Arguments:
+      file_handle -- a handle to the HTML file.
+
+    Returns:
+      A list containing the links contained in the HTML file.
+    """
+    soup = BeautifulSoup.BeautifulSoup(file_handle)
+    link_list = []
+    # Check only <a ...> tags with a 'href' attribute.
+    for link in soup.findAll("a", attrs={'href': re.compile(".*")}):
+        href = link['href']
+        # Ignore section links.
+        if not href.startswith('#'):
+            link_list.append(href)
+    return link_list

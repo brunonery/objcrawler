@@ -1,5 +1,7 @@
 from crawl_helpers import FilterListBySuffix
+from crawl_helpers import GetLinksFromHtml
 import unittest
+import StringIO
 
 class FilterListBySuffixTest(unittest.TestCase):
     def setUp(self):
@@ -14,6 +16,23 @@ class FilterListBySuffixTest(unittest.TestCase):
         assert new_list[0] == 'string1.suffix1'
         assert new_list[1] == 'string2.suffix1'
 
+class GetLinksFromHtmlTest(unittest.TestCase):
+    def testGetLinksFromHtmlWorks(self):
+        file_handle = StringIO.StringIO('<a href="http://www.test.com">')
+        link_list = GetLinksFromHtml(file_handle)
+        assert len(link_list) == 1
+        assert link_list[0] == 'http://www.test.com'
+
+    def testSectionLinksAreIgnored(self):
+        file_handle = StringIO.StringIO('<a href="#section">')
+        link_list = GetLinksFromHtml(file_handle)
+        assert len(link_list) == 0
+
+    def testSectionMarksAreIgnored(self):
+        file_handle = StringIO.StringIO('<a name="section">')
+        link_list = GetLinksFromHtml(file_handle)
+        assert len(link_list) == 0
+    
 if __name__ == "__main__":
     unittest.main()
 
