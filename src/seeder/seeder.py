@@ -1,0 +1,32 @@
+#!/usr/bin/env python
+"""seeder.py: Binary: populates the crawler database with URLs to visit."""
+__author__ = "Bruno Nery"
+__email__  = "brunonery@brunonery.com"
+
+import argparse
+from google_helper import GoogleSearch
+from seeder_config import SeederConfig
+
+parser = argparse.ArgumentParser(description='Seed the crawler with URLs to be visited.')
+parser.add_argument('--config', action='store', type=str)
+parser.add_argument('--use_google', action='store_true', default=False)
+parser.add_argument('--query', action='store', type=str)
+
+def SeedWithGoogle(config, query):
+    """Seeds the database using the results from a Google Search.
+
+    Arguments:
+      config -- the seeder config.
+      query -- the query to be performed.
+    """
+    search_results = GoogleSearch(
+        config.google_developer_key(), config.google_cref(), query)
+    for result in search_results:
+        print result.title, result.snippet, result.link
+
+if __name__ == "__main__":
+    # TODO(brunonery): verify arguments and fail gracefully if necessary.
+    args = parser.parse_args()
+    config = SeederConfig(open(args.config))
+    if args.use_google:
+        SeedWithGoogle(config, args.query)
