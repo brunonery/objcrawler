@@ -1,3 +1,8 @@
+#!/usr/bin/env python
+"""google_helper_test.py: Tests for google_helper.py."""
+__author__ = "Bruno Nery"
+__email__  = "brunonery@brunonery.com"
+
 from google_helper import GoogleSearch
 import unittest
 
@@ -9,5 +14,5 @@ class GoogleSearchTest(unittest.TestCase):
         search_results = GoogleSearch('AIzaSyCrGh4R7a7-ayRQyh7nXPwuBy6O7F0VqRM',
                                       '017513622067795982245:_iwk5xznrk0',
                                       'Google')
-        assert len(filter(lambda r: r.url == 'http://www.google.com/',
+        assert len(filter(lambda r: r.link == 'http://www.google.com/',
                           search_results)) > 0

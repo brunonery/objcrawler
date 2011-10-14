@@ -1,3 +1,8 @@
+#!/usr/bin/env python
+"""crawl_helpers.py: General helpers for the crawler."""
+__author__ = "Bruno Nery"
+__email__  = "brunonery@brunonery.com"
+
 import BeautifulSoup
 import re
 

@@ -7,6 +7,9 @@ import argparse
 from google_helper import GoogleSearch
 from seeder_config import SeederConfig
 
+from common.database_handler import DatabaseHandler
+from models.visitable_url import VisitableURL
+
 parser = argparse.ArgumentParser(description='Seed the crawler with URLs to be visited.')
 parser.add_argument('--config', action='store', type=str)
 parser.add_argument('--use_google', action='store_true', default=False)
@@ -19,10 +22,17 @@ def SeedWithGoogle(config, query):
       config -- the seeder config.
       query -- the query to be performed.
     """
+    # Obtain the search results.
     search_results = GoogleSearch(
         config.google_developer_key(), config.google_cref(), query)
-    for result in search_results:
-        print result.title, result.snippet, result.link
+    # Prepare the database.
+    database_handler = DatabaseHandler(config.database_address())
+    database_handler.Init()
+    # Add the results to the database.
+    session = database_handler.CreateSession()
+    for i in range(len(search_results)):
+        session.add(VisitableURL(search_results[i].link, i))
+    session.commit()
 
 if __name__ == "__main__":
     # TODO(brunonery): verify arguments and fail gracefully if necessary.

@@ -1,3 +1,8 @@
+#!/usr/bin/env python
+"""crawl_helpers_test.py: Tests for crawl_helpers.py."""
+__author__ = "Bruno Nery"
+__email__  = "brunonery@brunonery.com"
+
 from crawl_helpers import FilterListBySuffix
 from crawl_helpers import GetLinksFromHtml
 import unittest
