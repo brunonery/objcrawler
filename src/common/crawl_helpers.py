@@ -10,11 +10,11 @@ def FilterListBySuffix(items, suffixes):
     """Filters a list.
 
     Arguments:
-      items -- a list of strings.
-      suffixes -- the allowed suffixes.
+    items -- a list of strings.
+    suffixes -- the allowed suffixes.
 
     Returns:
-      A list containing only the items whose suffix is contained in suffixes.
+    A list containing only the items whose suffix is contained in suffixes.
     """
     new_list = []
     for item in items:
@@ -28,10 +28,10 @@ def GetLinksFromHtml(file_handle):
     """Returns a list with all the links contained in a HTML file.
 
     Arguments:
-      file_handle -- a handle to the HTML file.
+    file_handle -- a handle to the HTML file.
 
     Returns:
-      A list containing the links contained in the HTML file.
+    A list containing the links contained in the HTML file.
     """
     soup = BeautifulSoup.BeautifulSoup(file_handle)
     link_list = []

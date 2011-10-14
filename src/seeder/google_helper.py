@@ -12,12 +12,12 @@ def GoogleSearch(developer_key, cref, query):
     """Performs a web search using Google.
 
     Arguments:
-      developer_key -- a developer API key.
-      cref -- a reference to a Custom Search Engine (CSE).
-      query -- the query to be performed.
+    developer_key -- a developer API key.
+    cref -- a reference to a Custom Search Engine (CSE).
+    query -- the query to be performed.
 
     Returns:
-      A list containing a set of SearchResult (title, snippet, link).
+    A list containing a set of SearchResult (title, snippet, link).
     """
     service = build("customsearch", "v1", developerKey=developer_key)
     response = service.cse().list(q=query, cref=cref).execute()

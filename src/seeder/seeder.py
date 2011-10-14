@@ -19,8 +19,8 @@ def SeedWithGoogle(config, query):
     """Seeds the database using the results from a Google Search.
 
     Arguments:
-      config -- the seeder config.
-      query -- the query to be performed.
+    config -- the seeder config.
+    query -- the query to be performed.
     """
     # Obtain the search results.
     search_results = GoogleSearch(
