@@ -20,6 +20,7 @@ def build():
 def clean():
     local('find . -name "*.pyc" | xargs rm')
     local('rm -f objcrawler.tbz2')
+    local('rm -f data/objcrawler.db')
 
 def deploy():
     run('mkdir -p objcrawler/')
