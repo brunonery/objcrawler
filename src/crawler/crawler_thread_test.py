@@ -8,7 +8,9 @@ from crawler_thread import CrawlerThread
 from models.visitable_url import VisitableURL
 from models.visited_url import VisitedURL
 
+import StringIO
 import threading
+import textwrap
 import unittest
 
 class CrawlerThreadTest(unittest.TestCase):
@@ -52,3 +54,21 @@ class CrawlerThreadTest(unittest.TestCase):
         assert crawler_thread.CheckURLAndMarkAsVisited('http://www.microsoft.com/')
         assert not crawler_thread.CheckURLAndMarkAsVisited('http://www.facebook.com/')
         assert crawler_thread.CheckURLAndMarkAsVisited('http://www.facebook.com/')
+
+    def testHandleHtmlResourceWorks(self):
+        # Create test database and lock.
+        database_handler = DatabaseHandler('sqlite:///:memory:')
+        database_handler.Init()
+        visitable_url_lock = threading.Lock()
+        # Create test file.
+        file_handle = StringIO.StringIO(textwrap.dedent("""
+        <a href='http://www.google.com/'>Google</a>
+        <a href='http://www.microsoft.com/'>Microsoft</a>       
+        """))
+         # Test handling of HTML resource.
+        crawler_thread = CrawlerThread(database_handler, visitable_url_lock, None)
+        crawler_thread.HandleHtmlResource(file_handle)
+        session = database_handler.CreateSession()
+        query = session.query(VisitableURL)
+        assert query.filter(VisitableURL.url == 'http://www.google.com/').count() == 1
+        assert query.filter(VisitableURL.url == 'http://www.microsoft.com/').count() == 1        

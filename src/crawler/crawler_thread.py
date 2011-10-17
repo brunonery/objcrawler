@@ -3,6 +3,7 @@
 __author__ = "Bruno Nery"
 __email__  = "brunonery@brunonery.com"
 
+from common.crawl_helpers import GetLinksFromHtml
 from models.visitable_url import VisitableURL
 from models.visited_url import VisitedURL
 
@@ -23,7 +24,15 @@ class CrawlerThread(threading.Thread):
         self.visited_url_lock_ = visited_url_lock
 
     def run(self):
-        pass
+        while True:
+            next_url = self.PopVisitableURL()
+            # No more URLs to be visited.
+            if not next_url:
+                break
+            # Avoid visiting an URL more than once.
+            if self.CheckURLAndMarkAsVisited(next_url.url):
+                continue
+            self.HandleURL(next_url.url)
 
     def PopVisitableURL(self):
         """Pop the highest priority URL from visitable_urls table.
@@ -64,3 +73,35 @@ class CrawlerThread(threading.Thread):
             url_is_visited = True
         self.visited_url_lock_.release()
         return url_is_visited
+
+    def HandleURL(self, url):
+        """Obtain URL resource and handle it according to type.
+
+        Arguments:
+        url -- the URL of the resource to be processed.
+        """
+        resource = urllib2.open(url)
+        if not 'content-type' in resource.headers:
+            return
+        content_type = resource.headers['content-type']
+        if content_type.startswith('text/html'):
+            self.HandleHTMLResource(resource)
+        # elif content_type.startswith('application/zip'):
+        #     self.HandleZIPResource(resource)
+        # elif content_type.startswith('text/plain'):
+        #     self.HandleBlenderResource(resource)
+        resource.close()
+
+    def HandleHtmlResource(self, resource):
+        """Extract links from HTML resource and add them to the database.
+
+        Arguments:
+        resource -- the HTML resource to be processed.
+        """
+        link_list = GetLinksFromHtml(resource)
+        self.visitable_url_lock_.acquire()
+        session = self.database_handler_.CreateSession()
+        for i in range(len(link_list)):
+            session.add(VisitableURL(link_list[i], i))
+        session.commit()
+        self.visitable_url_lock_.release()
