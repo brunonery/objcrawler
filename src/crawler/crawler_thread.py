@@ -8,6 +8,7 @@ from models.visitable_url import VisitableURL
 from models.visited_url import VisitedURL
 
 import threading
+import urllib2
 
 class CrawlerThread(threading.Thread):
     def __init__(self, database_handler, visitable_url_lock, visited_url_lock):
@@ -80,12 +81,12 @@ class CrawlerThread(threading.Thread):
         Arguments:
         url -- the URL of the resource to be processed.
         """
-        resource = urllib2.open(url)
+        resource = urllib2.urlopen(url)
         if not 'content-type' in resource.headers:
             return
         content_type = resource.headers['content-type']
         if content_type.startswith('text/html'):
-            self.HandleHTMLResource(resource)
+            self.HandleHtmlResource(resource)
         # elif content_type.startswith('application/zip'):
         #     self.HandleZIPResource(resource)
         # elif content_type.startswith('text/plain'):
