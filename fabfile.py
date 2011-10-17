@@ -19,7 +19,7 @@ def build():
 
 def clean():
     local('find . -name "*.pyc" | xargs rm')
-    local('rm objcrawler.tbz2')
+    local('rm -f objcrawler.tbz2')
 
 def deploy():
     run('mkdir -p objcrawler/')
