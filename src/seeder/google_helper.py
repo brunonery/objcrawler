@@ -3,10 +3,10 @@
 __author__ = "Bruno Nery"
 __email__  = "brunonery@brunonery.com"
 
-from apiclient.discovery import build
-from collections import namedtuple
+import apiclient.discovery as google_api
+import collections
 
-SearchResult = namedtuple('SearchResult', 'title snippet link')
+SearchResult = collections.namedtuple('SearchResult', 'title snippet link')
 
 def GoogleSearch(developer_key, cref, query):
     """Performs a web search using Google.
@@ -19,9 +19,10 @@ def GoogleSearch(developer_key, cref, query):
     Returns:
     A list containing a set of SearchResult (title, snippet, link).
     """
-    service = build("customsearch", "v1", developerKey=developer_key)
+    service = google_api.build("customsearch", "v1", developerKey=developer_key)
     response = service.cse().list(q=query, cref=cref).execute()
     search_results = []
     for item in response['items']:
-        search_results.append(SearchResult(item['title'], item['snippet'], item['link']))
+        search_results.append(
+            SearchResult(item['title'], item['snippet'], item['link']))
     return search_results

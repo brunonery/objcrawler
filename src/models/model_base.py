@@ -3,6 +3,6 @@
 __author__ = "Bruno Nery"
 __email__  = "brunonery@brunonery.com"
 
-from sqlalchemy.ext.declarative import declarative_base
+import sqlalchemy.ext.declarative
 
-Base = declarative_base()
+Base = sqlalchemy.ext.declarative.declarative_base()

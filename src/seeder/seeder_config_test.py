@@ -3,11 +3,11 @@
 __author__ = "Bruno Nery"
 __email__  = "brunonery@brunonery.com"
 
+from seeder_config import SeederConfig
+
 import StringIO
 import textwrap
 import unittest
-
-from seeder_config import SeederConfig
 
 class SeederConfigTest(unittest.TestCase):
     def testSeederConfigWorks(self):

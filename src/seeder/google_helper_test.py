@@ -4,6 +4,7 @@ __author__ = "Bruno Nery"
 __email__  = "brunonery@brunonery.com"
 
 from google_helper import GoogleSearch
+
 import unittest
 
 class GoogleSearchTest(unittest.TestCase):

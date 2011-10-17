@@ -5,8 +5,9 @@ __email__  = "brunonery@brunonery.com"
 
 from crawl_helpers import FilterListBySuffix
 from crawl_helpers import GetLinksFromHtml
-import unittest
+
 import StringIO
+import unittest
 
 class FilterListBySuffixTest(unittest.TestCase):
     def setUp(self):

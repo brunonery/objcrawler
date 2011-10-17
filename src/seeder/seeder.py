@@ -3,12 +3,12 @@
 __author__ = "Bruno Nery"
 __email__  = "brunonery@brunonery.com"
 
-import argparse
+from common.database_handler import DatabaseHandler
 from google_helper import GoogleSearch
+from models.visitable_url import VisitableURL
 from seeder_config import SeederConfig
 
-from common.database_handler import DatabaseHandler
-from models.visitable_url import VisitableURL
+import argparse
 
 parser = argparse.ArgumentParser(description='Seed the crawler with URLs to be visited.')
 parser.add_argument('--config', action='store', type=str)
