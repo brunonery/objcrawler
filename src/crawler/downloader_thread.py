@@ -30,7 +30,7 @@ class DownloaderThread(threading.Thread):
     def HandleZipResource(self, resource):
         # TODO(brunonery): limit the size of Zip files that are downloaded.
         zip_handler = zipfile.ZipFile(DownloadAsTemporaryFile(resource))
-        model_files = FilterListBySuffix(zip_handler.namelist(), '.blend')
+        model_files = FilterListBySuffix(zip_handler.namelist(), ['.blend'])
         for model in model_files:
             zip_handler.extract(model, self.download_folder_)
 
