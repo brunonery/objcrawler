@@ -3,6 +3,7 @@
 __author__ = "Bruno Nery"
 __email__  = "brunonery@brunonery.com"
 
+from crawl_helpers import DownloadAsTemporaryFile
 from crawl_helpers import FilterListBySuffix
 from crawl_helpers import GetLinksFromHtml
 from crawl_helpers import GetUrlPriority
@@ -11,6 +12,13 @@ from crawl_helpers import IsBlenderFile
 import StringIO
 import unittest
 
+class DownloadAsTemporaryFileTest(unittest.TestCase):
+    def testDownloadAsTemporaryFileWorks(self):
+        test_file = StringIO.StringIO('content')
+        file_handle = DownloadAsTemporaryFile(test_file)
+        assert file_handle.read() == 'content'
+        file_handle.close()
+        
 class FilterListBySuffixTest(unittest.TestCase):
     def setUp(self):
         self.items = ['string1.suffix1',

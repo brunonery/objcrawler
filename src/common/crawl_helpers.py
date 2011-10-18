@@ -5,7 +5,22 @@ __email__  = "brunonery@brunonery.com"
 
 import BeautifulSoup
 import re
+import tempfile
 
+def DownloadAsTemporaryFile(resource):
+    """Saves a resource as a temporary file.
+
+    Arguments:
+    resource -- the resource to be downloaded.
+
+    Returns:
+    A handle to the temporary file.
+    """
+    file_handle = tempfile.TemporaryFile()
+    file_handle.write(resource.read())
+    file_handle.seek(0)
+    return file_handle
+    
 def FilterListBySuffix(items, suffixes):
     """Filters a list.
 
