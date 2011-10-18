@@ -7,6 +7,7 @@ from common.crawl_helpers import GetLinksFromHtml
 from models.visitable_url import VisitableURL
 from models.visited_url import VisitedURL
 
+import logging
 import threading
 import urllib2
 import urlparse
@@ -82,12 +83,16 @@ class CrawlerThread(threading.Thread):
         Arguments:
         url -- the URL of the resource to be processed.
         """
-        resource = urllib2.urlopen(url)
+        try:
+            resource = urllib2.urlopen(url)
+        except urllib2.URLError as url_error:
+            logging.warning('Problem opening %s (%s).', url, url_error)
+            return
         if not 'content-type' in resource.headers:
             return
         content_type = resource.headers['content-type']
         if content_type.startswith('text/html'):
-            self.HandleHtmlResource(resource)
+            self.HandleHtmlResource(url, resource)
         # elif content_type.startswith('application/zip'):
         #     self.HandleZIPResource(resource)
         # elif content_type.startswith('text/plain'):
