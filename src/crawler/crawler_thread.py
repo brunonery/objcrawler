@@ -4,6 +4,7 @@ __author__ = "Bruno Nery"
 __email__  = "brunonery@brunonery.com"
 
 from common.crawl_helpers import GetLinksFromHtml
+from common.crawl_helpers import GetUrlPriority
 from models.visitable_url import VisitableURL
 from models.visited_url import VisitedURL
 
@@ -13,7 +14,11 @@ import urllib2
 import urlparse
 
 class CrawlerThread(threading.Thread):
-    def __init__(self, database_handler, visitable_url_lock, visited_url_lock):
+    def __init__(self,
+                 database_handler,
+                 download_queue,
+                 visitable_url_lock,
+                 visited_url_lock):
         """Builds a CrawlerThread instance.
 
         Arguments:
@@ -23,6 +28,7 @@ class CrawlerThread(threading.Thread):
         """
         threading.Thread.__init__(self)
         self.database_handler_ = database_handler
+        self.download_queue_ = download_queue
         self.visitable_url_lock_ = visitable_url_lock
         self.visited_url_lock_ = visited_url_lock
 
@@ -36,6 +42,8 @@ class CrawlerThread(threading.Thread):
             if self.CheckURLAndMarkAsVisited(next_url.url):
                 continue
             self.HandleURL(next_url.url)
+        # Wait for all remaining items to be processed.
+        self.download_queue_.join()
 
     def PopVisitableURL(self):
         """Pop the highest priority URL from visitable_urls table.
@@ -92,14 +100,14 @@ class CrawlerThread(threading.Thread):
             return
         content_type = resource.headers['content-type']
         if content_type.startswith('text/html'):
-            self.HandleHtmlResource(url, resource)
+            self.HandleHtmlResource(resource)
         elif content_type.startswith('application/zip'):
-            self.HandleZipResource(url, resource)
+            self.download_queue_.put(resource)
         elif content_type.startswith('text/plain'):
-            self.HandleBlenderResource(resource)
+            self.download_queue_.put(resource)
         resource.close()
 
-    def HandleHtmlResource(self, base_url, resource):
+    def HandleHtmlResource(self, resource):
         """Extract links from HTML resource and add them to the database.
 
         Arguments:
@@ -110,26 +118,8 @@ class CrawlerThread(threading.Thread):
         self.visitable_url_lock_.acquire()
         session = self.database_handler_.CreateSession()
         for i in range(len(link_list)):
-            # TODO(brunonery): calculate priority based on link.
-            session.add(
-                VisitableURL(urlparse.urljoin(base_url, link_list[i]), i))
+            session.add(VisitableURL(urlparse.urljoin(resource.url,
+                                                      link_list[i]),
+                                     GetUrlPriority(link_list[i])))
         session.commit()
         self.visitable_url_lock_.release()
-
-    def HandleZipResource(self, url, resource):
-        """Verifies if Zip contains 3D models and handles each one of them.
-
-        Arguments:
-        url -- the Zip resource URL.
-        resource -- the Zip resource to be processed.
-        """
-        print 'Zip found: %s!' % url
-
-    def HandlePlainTextResource(self, url, resource):
-        """Verifies if plain text resource is a 3D model and handle it.
-
-        Arguments:
-        url -- the resource URL.
-        resource -- the resource to be processed.
-        """
-        print 'PlainText found: %s!' % url

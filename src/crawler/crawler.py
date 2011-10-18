@@ -6,8 +6,10 @@ __email__  = "brunonery@brunonery.com"
 from common.database_handler import DatabaseHandler
 from crawler_config import CrawlerConfig
 from crawler_thread import CrawlerThread
+from downloader_thread import DownloaderThread
 
 import argparse
+import Queue
 import threading
 
 parser = argparse.ArgumentParser(
@@ -24,14 +26,24 @@ if __name__ == "__main__":
     database_handler.Init()
     visitable_url_lock = threading.Lock()
     visited_url_lock = threading.Lock()
+    # Prepare download queue.
+    download_queue = Queue.Queue()
     # Start all threads.
-    thread_list = []
+    crawler_thread_list = []
     for i in range(args.instances):
         current_thread = CrawlerThread(database_handler,
+                                       download_queue,
                                        visitable_url_lock,
                                        visited_url_lock)
-        thread_list.append(current_thread)
+        crawler_thread_list.append(current_thread)
         current_thread.start()
-    # Wait for all threads to finish.
-    for thread in thread_list:
+    downloader_thread_list = []
+    # TODO(brunonery): have different number of crawler and downloader threads.
+    for i in range(args.instances):
+        current_thread = DownloaderThread(download_queue)
+        current_thread.daemon = True
+        downloader_thread_list.append(current_thread)
+        current_thread.start()
+    # Wait for all crawler threads to finish.
+    for thread in crawler_thread_list:
         thread.join()

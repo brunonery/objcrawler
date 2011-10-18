@@ -26,7 +26,7 @@ class CrawlerThreadTest(unittest.TestCase):
         session.commit()
          # Test pop.
         crawler_thread = CrawlerThread(
-            database_handler, visitable_url_lock, None)
+            database_handler, None, visitable_url_lock, None)
         the_url = crawler_thread.PopVisitableURL()
         assert the_url.url == 'http://www.google.com/'
         assert the_url.priority == 1
@@ -49,7 +49,8 @@ class CrawlerThreadTest(unittest.TestCase):
         session.add(VisitedURL('http://www.google.com/'))
         session.commit()
          # Test check.
-        crawler_thread = CrawlerThread(database_handler, None, visited_url_lock)
+        crawler_thread = CrawlerThread(
+            database_handler, None, None, visited_url_lock)
         assert crawler_thread.CheckURLAndMarkAsVisited('http://www.google.com/') 
         assert crawler_thread.CheckURLAndMarkAsVisited('http://www.microsoft.com/')
         assert not crawler_thread.CheckURLAndMarkAsVisited('http://www.facebook.com/')
@@ -66,9 +67,11 @@ class CrawlerThreadTest(unittest.TestCase):
         <a href='http://www.microsoft.com/'>Microsoft</a>
         <a href='links.html'>Links</a>
         """))
+        file_handle.url = 'http://www.test.com'
          # Test handling of HTML resource.
-        crawler_thread = CrawlerThread(database_handler, visitable_url_lock, None)
-        crawler_thread.HandleHtmlResource('http://www.test.com/', file_handle)
+        crawler_thread = CrawlerThread(
+            database_handler, None, visitable_url_lock, None)
+        crawler_thread.HandleHtmlResource(file_handle)
         session = database_handler.CreateSession()
         query = session.query(VisitableURL)
         assert query.filter(VisitableURL.url == 'http://www.google.com/').count() == 1
