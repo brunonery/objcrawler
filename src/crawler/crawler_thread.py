@@ -93,10 +93,10 @@ class CrawlerThread(threading.Thread):
         content_type = resource.headers['content-type']
         if content_type.startswith('text/html'):
             self.HandleHtmlResource(url, resource)
-        # elif content_type.startswith('application/zip'):
-        #     self.HandleZIPResource(resource)
-        # elif content_type.startswith('text/plain'):
-        #     self.HandleBlenderResource(resource)
+        elif content_type.startswith('application/zip'):
+            self.HandleZipResource(url, resource)
+        elif content_type.startswith('text/plain'):
+            self.HandleBlenderResource(resource)
         resource.close()
 
     def HandleHtmlResource(self, base_url, resource):
@@ -110,7 +110,26 @@ class CrawlerThread(threading.Thread):
         self.visitable_url_lock_.acquire()
         session = self.database_handler_.CreateSession()
         for i in range(len(link_list)):
+            # TODO(brunonery): calculate priority based on link.
             session.add(
                 VisitableURL(urlparse.urljoin(base_url, link_list[i]), i))
         session.commit()
         self.visitable_url_lock_.release()
+
+    def HandleZipResource(self, url, resource):
+        """Verifies if Zip contains 3D models and handles each one of them.
+
+        Arguments:
+        url -- the Zip resource URL.
+        resource -- the Zip resource to be processed.
+        """
+        print 'Zip found: %s!' % url
+
+    def HandlePlainTextResource(self, url, resource):
+        """Verifies if plain text resource is a 3D model and handle it.
+
+        Arguments:
+        url -- the resource URL.
+        resource -- the resource to be processed.
+        """
+        print 'PlainText found: %s!' % url
