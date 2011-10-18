@@ -5,6 +5,7 @@ __email__  = "brunonery@brunonery.com"
 
 from crawl_helpers import FilterListBySuffix
 from crawl_helpers import GetLinksFromHtml
+from crawl_helpers import GetUrlPriority
 from crawl_helpers import IsBlenderFile
 
 import StringIO
@@ -39,6 +40,12 @@ class GetLinksFromHtmlTest(unittest.TestCase):
         file_handle = StringIO.StringIO('<a name="section">')
         link_list = GetLinksFromHtml(file_handle)
         assert len(link_list) == 0
+
+class GetUrlPriorityTest(unittest.TestCase):
+    def testGetUrlPriorityWorks(self):
+        assert GetUrlPriority('test.zip') == 1
+        assert GetUrlPriority('test.blend') == 1
+        assert GetUrlPriority('test.html') == 2
 
 class IsBlenderFileTest(unittest.TestCase):
     def testIsBlenderFileWorks(self):

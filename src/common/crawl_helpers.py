@@ -43,6 +43,21 @@ def GetLinksFromHtml(file_handle):
             link_list.append(href)
     return link_list
 
+def GetUrlPriority(url):
+    """Obtains a URL priority.
+
+    Arguments:
+    url -- the URL to be evaluated.
+
+    Returns:
+    The URL priority. A smaller number indicates higher priority.
+    """
+    # Zip and 3D models should be handled first.
+    if url.endswith('zip') or url.endswith('blend'):
+        return 1
+    else:
+        return 2
+
 def IsBlenderFile(file_handle):
     """Tells if a file is a blender one.
 
