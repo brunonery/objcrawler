@@ -8,7 +8,7 @@ import re
 import tempfile
 
 def DownloadAsTemporaryFile(resource):
-    """Saves a resource as a temporary file.
+    """Downloads a resource to a temporary file.
 
     Arguments:
     resource -- the resource to be downloaded.
@@ -18,6 +18,7 @@ def DownloadAsTemporaryFile(resource):
     """
     file_handle = tempfile.TemporaryFile()
     file_handle.write(resource.read())
+    resource.close()
     file_handle.seek(0)
     return file_handle
     

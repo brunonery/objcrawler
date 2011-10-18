@@ -105,7 +105,6 @@ class CrawlerThread(threading.Thread):
             self.download_queue_.put(resource)
         elif content_type.startswith('text/plain'):
             self.download_queue_.put(resource)
-        resource.close()
 
     def HandleHtmlResource(self, resource):
         """Extract links from HTML resource and add them to the database.
@@ -115,6 +114,7 @@ class CrawlerThread(threading.Thread):
         resource -- the HTML resource to be processed.
         """
         link_list = GetLinksFromHtml(resource)
+        resource.close()
         self.visitable_url_lock_.acquire()
         session = self.database_handler_.CreateSession()
         for i in range(len(link_list)):

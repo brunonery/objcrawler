@@ -11,12 +11,19 @@ from crawl_helpers import IsBlenderFile
 
 import StringIO
 import unittest
+import urllib2
 
 class DownloadAsTemporaryFileTest(unittest.TestCase):
     def testDownloadAsTemporaryFileWorks(self):
         test_file = StringIO.StringIO('content')
         file_handle = DownloadAsTemporaryFile(test_file)
         assert file_handle.read() == 'content'
+        file_handle.close()
+
+    def testDownloadUrlAsTemporaryFileWorks(self):
+        test_file = urllib2.urlopen('http://www.google.com')
+        file_handle = DownloadAsTemporaryFile(test_file)
+        assert file_handle.read(15) == '<!doctype html>'
         file_handle.close()
         
 class FilterListBySuffixTest(unittest.TestCase):
