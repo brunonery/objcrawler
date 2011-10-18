@@ -12,6 +12,10 @@ class CrawlerConfig():
         config = ConfigParser.ConfigParser()
         config.readfp(file_handle)
         self.database_address_ = config.get('General', 'database_address')
+        self.download_folder_ = config.get('General', 'download_folder')
 
     def database_address(self):
         return self.database_address_
+
+    def download_folder(self):
+        return self.download_folder_

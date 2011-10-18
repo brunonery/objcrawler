@@ -14,6 +14,8 @@ class CrawlerConfigTest(unittest.TestCase):
         file_handle = StringIO.StringIO(textwrap.dedent("""
         [General]
         database_address: my_database_address
+        download_folder: my_download_folder
         """))
         config = CrawlerConfig(file_handle)
         assert config.database_address() == 'my_database_address'
+        assert config.download_folder() == 'my_download_folder'

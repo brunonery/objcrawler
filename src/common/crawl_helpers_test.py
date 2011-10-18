@@ -70,5 +70,5 @@ class IsBlenderFileTest(unittest.TestCase):
         assert not IsBlenderFile(noblender_file)
 
     def testIsBlenderFileWorksWithFile(self):
-        blender_file = open('data/sample.blend')
+        blender_file = open('test/data/sample.blend')
         assert IsBlenderFile(blender_file)
