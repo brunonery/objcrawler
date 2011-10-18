@@ -1,4 +1,5 @@
 from fabric.api import cd, local, put, run
+import sys
 
 def build():
     # Create build tree.
@@ -32,3 +33,8 @@ def deploy():
 def test():
     clean()
     local('nosetests')
+
+def fresh_start():
+    clean()
+    local('python src/seeder/seeder.py --config config/objcrawler.cfg --use_google --query "3d models"')
+    local('python src/crawler/crawler.py --config config/objcrawler.cfg')
