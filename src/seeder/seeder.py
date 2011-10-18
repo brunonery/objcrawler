@@ -31,7 +31,8 @@ def SeedWithGoogle(config, query):
     # Add the results to the database.
     session = database_handler.CreateSession()
     for i in range(len(search_results)):
-        session.add(VisitableURL(search_results[i].link, i))
+        # Seed results always have the highest priority.
+        session.add(VisitableURL(search_results[i].link, 0))
     session.commit()
 
 if __name__ == "__main__":
