@@ -63,12 +63,14 @@ class CrawlerThreadTest(unittest.TestCase):
         # Create test file.
         file_handle = StringIO.StringIO(textwrap.dedent("""
         <a href='http://www.google.com/'>Google</a>
-        <a href='http://www.microsoft.com/'>Microsoft</a>       
+        <a href='http://www.microsoft.com/'>Microsoft</a>
+        <a href='links.html'>Links</a>
         """))
          # Test handling of HTML resource.
         crawler_thread = CrawlerThread(database_handler, visitable_url_lock, None)
-        crawler_thread.HandleHtmlResource(file_handle)
+        crawler_thread.HandleHtmlResource('http://www.test.com/', file_handle)
         session = database_handler.CreateSession()
         query = session.query(VisitableURL)
         assert query.filter(VisitableURL.url == 'http://www.google.com/').count() == 1
-        assert query.filter(VisitableURL.url == 'http://www.microsoft.com/').count() == 1        
+        assert query.filter(VisitableURL.url == 'http://www.microsoft.com/').count() == 1
+        assert query.filter(VisitableURL.url == 'http://www.test.com/links.html').count() == 1

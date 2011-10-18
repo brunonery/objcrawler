@@ -9,6 +9,7 @@ from models.visited_url import VisitedURL
 
 import threading
 import urllib2
+import urlparse
 
 class CrawlerThread(threading.Thread):
     def __init__(self, database_handler, visitable_url_lock, visited_url_lock):
@@ -93,16 +94,18 @@ class CrawlerThread(threading.Thread):
         #     self.HandleBlenderResource(resource)
         resource.close()
 
-    def HandleHtmlResource(self, resource):
+    def HandleHtmlResource(self, base_url, resource):
         """Extract links from HTML resource and add them to the database.
 
         Arguments:
+        base_url -- the HTML resource URL.
         resource -- the HTML resource to be processed.
         """
         link_list = GetLinksFromHtml(resource)
         self.visitable_url_lock_.acquire()
         session = self.database_handler_.CreateSession()
         for i in range(len(link_list)):
-            session.add(VisitableURL(link_list[i], i))
+            session.add(
+                VisitableURL(urlparse.urljoin(base_url, link_list[i]), i))
         session.commit()
         self.visitable_url_lock_.release()
