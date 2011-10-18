@@ -6,6 +6,7 @@ __email__  = "brunonery@brunonery.com"
 from downloader_thread import DownloaderThread
 
 import os
+import StringIO
 import unittest
 
 class DownloaderThreadTest(unittest.TestCase):
@@ -17,3 +18,14 @@ class DownloaderThreadTest(unittest.TestCase):
         downloader_thread.HandleZipResource(file_handle)
         assert os.path.exists('test/tmp/sample.blend')
         assert not os.path.exists('test/tmp/sample.txt')
+
+    def testHandleZipResourceIgnoresNonZipFiles(self):
+        # Create non-Zip resource.
+        file_handle = StringIO.StringIO('nozipfile')
+        file_handle.url = 'nozipfile.zip'
+        # Test the Zip handler.
+        downloader_thread = DownloaderThread(None, None)
+        try:
+            downloader_thread.HandleZipResource(file_handle)
+        except:
+            assert False
