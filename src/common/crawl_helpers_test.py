@@ -5,6 +5,7 @@ __email__  = "brunonery@brunonery.com"
 
 from crawl_helpers import FilterListBySuffix
 from crawl_helpers import GetLinksFromHtml
+from crawl_helpers import IsBlenderFile
 
 import StringIO
 import unittest
@@ -38,7 +39,14 @@ class GetLinksFromHtmlTest(unittest.TestCase):
         file_handle = StringIO.StringIO('<a name="section">')
         link_list = GetLinksFromHtml(file_handle)
         assert len(link_list) == 0
-    
-if __name__ == "__main__":
-    unittest.main()
 
+class IsBlenderFileTest(unittest.TestCase):
+    def testIsBlenderFileWorks(self):
+        blender_file = StringIO.StringIO('BLENDERrestofthefile')
+        assert IsBlenderFile(blender_file)
+        noblender_file = StringIO.StringIO('NOBLENDERrestofthefile')
+        assert not IsBlenderFile(noblender_file)
+
+    def testIsBlenderFileWorksWithFile(self):
+        blender_file = open('data/sample.blend')
+        assert IsBlenderFile(blender_file)

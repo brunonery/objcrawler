@@ -42,3 +42,14 @@ def GetLinksFromHtml(file_handle):
         if not href.startswith('#'):
             link_list.append(href)
     return link_list
+
+def IsBlenderFile(file_handle):
+    """Tells if a file is a blender one.
+
+    Arguments:
+    file_handle -- a handle to the file.
+
+    Returns:
+    True if the file is a blender one, False otherwise.
+    """
+    return (file_handle.read(7) == 'BLENDER')
