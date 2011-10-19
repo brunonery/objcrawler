@@ -23,5 +23,6 @@ class VisitedURL(Base):
         url -- the URL to be visited.
         """
         m = md5.new()
-        m.update(url)
+        print url
+        m.update(url.encode('utf-8'))
         self.url_md5 = m.digest()

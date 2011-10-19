@@ -56,6 +56,16 @@ class CrawlerThreadTest(unittest.TestCase):
         assert not crawler_thread.CheckURLAndMarkAsVisited('http://www.facebook.com/')
         assert crawler_thread.CheckURLAndMarkAsVisited('http://www.facebook.com/')
 
+    def testCheckURLAndMarkAsVisitedWithXeaWorks(self):
+        # Create test database and lock.
+        database_handler = DatabaseHandler('sqlite:///:memory:')
+        database_handler.Init()
+        visited_url_lock = threading.Lock()
+         # Test check.
+        crawler_thread = CrawlerThread(
+            database_handler, None, None, visited_url_lock)
+        assert not crawler_thread.CheckURLAndMarkAsVisited(u'\xea')
+
     def testHandleHtmlResourceWorks(self):
         # Create test database and lock.
         database_handler = DatabaseHandler('sqlite:///:memory:')
