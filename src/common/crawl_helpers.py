@@ -4,8 +4,11 @@ __author__ = "Bruno Nery"
 __email__  = "brunonery@brunonery.com"
 
 import BeautifulSoup
+import md5
+import os
 import re
 import tempfile
+import urlparse
 
 def DownloadAsTemporaryFile(resource):
     """Downloads a resource to a temporary file.
@@ -21,7 +24,7 @@ def DownloadAsTemporaryFile(resource):
     resource.close()
     file_handle.seek(0)
     return file_handle
-    
+
 def FilterListBySuffix(items, suffixes):
     """Filters a list.
 
@@ -40,6 +43,25 @@ def FilterListBySuffix(items, suffixes):
                 continue
     return new_list
 
+def GenerateBlenderFilenameFromURL(url):
+    """Generates a blender filename from a URL.
+
+    Extracts the filename (minus extension) from the URL, adding the md5 hash
+    and the .blend extension to it. If no filename is found in the URL, the
+    filename will consist of the md5 hash plus the .blend extension.
+
+    Arguments:
+    url -- the URL to use when generating the blender filename.
+
+    Returns:
+    A blender filename.
+    """
+    path = urlparse.urlsplit(url).path
+    name = os.path.basename(path)
+    m = md5.new()
+    m.update(url)
+    return name.split('.')[0] + m.hexdigest() + '.blend'
+    
 def GetLinksFromHtml(file_handle):
     """Returns a list with all the links contained in a HTML file.
 

@@ -6,8 +6,10 @@ __email__  = "brunonery@brunonery.com"
 from downloader_thread import DownloaderThread
 
 import io
+import mock
 import os
 import StringIO
+import testfixtures
 import unittest
 
 class DownloaderThreadTest(unittest.TestCase):
@@ -35,3 +37,22 @@ class DownloaderThreadTest(unittest.TestCase):
         # Test the Zip handler.
         downloader_thread = DownloaderThread(None, None)
         downloader_thread.HandleZipResource(file_handle)
+
+    def testHandlePlainTextResourceWorks(self):
+        downloader_thread = DownloaderThread(None, None)
+        downloader_thread.HandleBlenderResource = mock.Mock()
+        with testfixtures.Replacer() as r:
+            r.replace('crawler.downloader_thread.IsBlenderFile',
+                      mock.Mock(return_value=True))
+            downloader_thread.HandlePlainTextResource(None)
+            downloader_thread.HandleBlenderResource.assert_called_with(None)
+
+    def testHandleBlenderResourceWorks(self):
+        downloader_thread = DownloaderThread(None, 'test/tmp')
+        with testfixtures.Replacer() as r:
+            r.replace('crawler.downloader_thread.GenerateBlenderFilenameFromURL',
+                      mock.Mock(return_value='fake.blend'))
+            fake_handle = StringIO.StringIO('')
+            fake_handle.url = 'fake.blend'
+            downloader_thread.HandleBlenderResource(fake_handle)
+            assert os.path.exists('test/tmp/fake.blend')

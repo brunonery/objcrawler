@@ -5,6 +5,7 @@ __email__  = "brunonery@brunonery.com"
 
 from crawl_helpers import DownloadAsTemporaryFile
 from crawl_helpers import FilterListBySuffix
+from crawl_helpers import GenerateBlenderFilenameFromURL
 from crawl_helpers import GetLinksFromHtml
 from crawl_helpers import GetURLPriority
 from crawl_helpers import IsBlenderFile
@@ -38,6 +39,17 @@ class FilterListBySuffixTest(unittest.TestCase):
         assert len(new_list) == 2
         assert new_list[0] == 'string1.suffix1'
         assert new_list[1] == 'string2.suffix1'
+
+class GenerateBlenderFilenameFromURLTest(unittest.TestCase):
+    def testGenerateBlenderFileFromURLWorks(self):
+        assert (
+            GenerateBlenderFilenameFromURL('http://www.test.com/file.blend') ==
+            'file512f6a50eeacf57e8756e06b969d0b52.blend'
+            )
+        assert (
+            GenerateBlenderFilenameFromURL('http://www.test.com/folder/') ==
+            'e1ff2a98cda50cf2995c851ade665a88.blend'
+            )
 
 class GetLinksFromHtmlTest(unittest.TestCase):
     def testGetLinksFromHtmlWorks(self):

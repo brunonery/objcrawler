@@ -5,9 +5,11 @@ __email__  = "brunonery@brunonery.com"
 
 from common.crawl_helpers import DownloadAsTemporaryFile
 from common.crawl_helpers import FilterListBySuffix
+from common.crawl_helpers import GenerateBlenderFilenameFromURL
 from common.crawl_helpers import IsBlenderFile
 
 import logging
+import os
 import struct
 import threading
 import zipfile
@@ -41,4 +43,13 @@ class DownloaderThread(threading.Thread):
             logging.warning('Bad zip file: %s.' % (resource.url))
 
     def HandlePlainTextResource(self, resource):
-        pass
+        if IsBlenderFile(resource):
+            self.HandleBlenderResource(resource)
+
+    def HandleBlenderResource(self, resource):
+        filename = GenerateBlenderFilenameFromURL(resource.url)
+        file_handle = open(os.path.join(self.download_folder_, filename), 'wb')
+        file_handle.write('BLENDER')
+        file_handle.write(resource.read())
+        resource.close()
+        file_handle.close()
