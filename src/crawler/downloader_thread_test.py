@@ -5,6 +5,7 @@ __email__  = "brunonery@brunonery.com"
 
 from downloader_thread import DownloaderThread
 
+import io
 import os
 import StringIO
 import unittest
@@ -25,7 +26,12 @@ class DownloaderThreadTest(unittest.TestCase):
         file_handle.url = 'nozipfile.zip'
         # Test the Zip handler.
         downloader_thread = DownloaderThread(None, None)
-        try:
-            downloader_thread.HandleZipResource(file_handle)
-        except:
-            assert False
+        downloader_thread.HandleZipResource(file_handle)
+
+    def testHandleZipResourceIgnoresFaultyZipFiles(self):
+        # Open Zip resource.
+        file_handle = io.open('test/data/faulty.zip', 'rb')
+        file_handle.url = 'faulty.zip'
+        # Test the Zip handler.
+        downloader_thread = DownloaderThread(None, None)
+        downloader_thread.HandleZipResource(file_handle)

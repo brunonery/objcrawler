@@ -8,6 +8,7 @@ from common.crawl_helpers import FilterListBySuffix
 from common.crawl_helpers import IsBlenderFile
 
 import logging
+import struct
 import threading
 import zipfile
 
@@ -35,7 +36,8 @@ class DownloaderThread(threading.Thread):
             model_files = FilterListBySuffix(zip_handle.namelist(), ['.blend'])
             for model in model_files:
                 zip_handle.extract(model, self.download_folder_)
-        except zipfile.BadZipfile:
+        # We catch struct.error because of Python issue #4844.
+        except (zipfile.BadZipfile, struct.error):
             logging.warning('Bad zip file: %s.' % (resource.url))
 
     def HandlePlainTextResource(self, resource):
