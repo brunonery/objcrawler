@@ -20,7 +20,7 @@ import textwrap
 import unittest
 import urllib2
 
-def MockUrlOpenWithException(exception, url):
+def MockURLOpenWithException(exception, url):
     """Mock for urllib2.urlopen that throws an exception.
 
     Throws the specified exception when called. Should be built using
@@ -31,9 +31,9 @@ def MockUrlOpenWithException(exception, url):
     elif exception == 'URLError':
         raise urllib2.URLError('')
 
-def CreateFakeUrlResource(type):
-    UrlResource = collections.namedtuple('UrlResource', ['headers'])
-    resource = UrlResource(headers={'content-type': type})
+def CreateFakeURLResource(type):
+    URLResource = collections.namedtuple('URLResource', ['headers'])
+    resource = URLResource(headers={'content-type': type})
     return resource
 
 class CrawlerThreadTest(unittest.TestCase):
@@ -95,17 +95,17 @@ class CrawlerThreadTest(unittest.TestCase):
         crawler_thread.HandleHtmlResource = mock.Mock()
         with testfixtures.Replacer() as r:
             # HTML resource.
-            html_resource = CreateFakeUrlResource('text/html')
+            html_resource = CreateFakeURLResource('text/html')
             r.replace('urllib2.urlopen', mock.Mock(return_value=html_resource))
             crawler_thread.HandleURL('http://www.fake.com/')
             crawler_thread.HandleHtmlResource.assert_called_with(html_resource)
             # Zip resource.
-            zip_resource = CreateFakeUrlResource('application/zip')
+            zip_resource = CreateFakeURLResource('application/zip')
             r.replace('urllib2.urlopen', mock.Mock(return_value=zip_resource))
             crawler_thread.HandleURL('http://www.fake.com/')
             mock_download_queue.put.assert_called_with(zip_resource)
             # Plain text resource.
-            text_resource = CreateFakeUrlResource('text/plain')
+            text_resource = CreateFakeURLResource('text/plain')
             r.replace('urllib2.urlopen', mock.Mock(return_value=text_resource))
             crawler_thread.HandleURL('http://www.fake.com/')
             mock_download_queue.put.assert_called_with(text_resource)
@@ -114,7 +114,7 @@ class CrawlerThreadTest(unittest.TestCase):
         crawler_thread = CrawlerThread(None, None, None, None)
         with testfixtures.Replacer() as r:
             r.replace('urllib2.urlopen',
-                      functools.partial(MockUrlOpenWithException,
+                      functools.partial(MockURLOpenWithException,
                                         'BadStatusLine'))
             crawler_thread.HandleURL('http://www.fake.com/')
 
@@ -122,7 +122,7 @@ class CrawlerThreadTest(unittest.TestCase):
         crawler_thread = CrawlerThread(None, None, None, None)
         with testfixtures.Replacer() as r:
             r.replace('urllib2.urlopen',
-                      functools.partial(MockUrlOpenWithException,
+                      functools.partial(MockURLOpenWithException,
                                         'URLError'))
             crawler_thread.HandleURL('http://www.fake.com/')
 

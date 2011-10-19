@@ -59,7 +59,7 @@ def GetLinksFromHtml(file_handle):
             link_list.append(href)
     return link_list
 
-def GetUrlPriority(url):
+def GetURLPriority(url):
     """Obtains a URL priority.
 
     Arguments:

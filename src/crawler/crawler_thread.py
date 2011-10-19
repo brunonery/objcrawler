@@ -4,7 +4,7 @@ __author__ = "Bruno Nery"
 __email__  = "brunonery@brunonery.com"
 
 from common.crawl_helpers import GetLinksFromHtml
-from common.crawl_helpers import GetUrlPriority
+from common.crawl_helpers import GetURLPriority
 from models.visitable_url import VisitableURL
 from models.visited_url import VisitedURL
 
@@ -124,6 +124,6 @@ class CrawlerThread(threading.Thread):
         for i in range(len(link_list)):
             session.add(VisitableURL(urlparse.urljoin(resource.url,
                                                       link_list[i]),
-                                     GetUrlPriority(link_list[i])))
+                                     GetURLPriority(link_list[i])))
         session.commit()
         self.visitable_url_lock_.release()
