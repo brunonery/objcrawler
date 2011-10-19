@@ -8,10 +8,22 @@ from crawler_thread import CrawlerThread
 from models.visitable_url import VisitableURL
 from models.visited_url import VisitedURL
 
+import functools
+import httplib
 import StringIO
 import threading
+import testfixtures
 import textwrap
 import unittest
+
+def MockUrlOpenWithException(exception, url):
+    """Mock for urllib2.urlopen that throws an exception.
+
+    Throws the specified exception when called. Should be built using
+    functools.partial.
+    """
+    if exception == 'BadStatusLine':
+        raise httplib.BadStatusLine('')
 
 class CrawlerThreadTest(unittest.TestCase):
     def testPopVisitableURLWorks(self):
@@ -65,6 +77,14 @@ class CrawlerThreadTest(unittest.TestCase):
         crawler_thread = CrawlerThread(
             database_handler, None, None, visited_url_lock)
         assert not crawler_thread.CheckURLAndMarkAsVisited(u'\xea')
+
+    def testHandleURLIgnoreBadStatusLine(self):
+        crawler_thread = CrawlerThread(None, None, None, None)
+        with testfixtures.Replacer() as r:
+            r.replace('urllib2.urlopen',
+                      functools.partial(MockUrlOpenWithException,
+                                        'BadStatusLine'))
+            crawler_thread.HandleURL('http://www.fake.com/')
 
     def testHandleHtmlResourceWorks(self):
         # Create test database and lock.

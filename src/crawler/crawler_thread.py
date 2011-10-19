@@ -8,6 +8,7 @@ from common.crawl_helpers import GetUrlPriority
 from models.visitable_url import VisitableURL
 from models.visited_url import VisitedURL
 
+import httplib
 import logging
 import threading
 import urllib2
@@ -95,6 +96,9 @@ class CrawlerThread(threading.Thread):
             resource = urllib2.urlopen(url)
         except urllib2.URLError as url_error:
             logging.warning('Problem opening %s (%s).', url, url_error)
+            return
+        except httplib.BadStatusLine:
+            logging.warning('Bad status line in %s.', url)
             return
         if not 'content-type' in resource.headers:
             return
