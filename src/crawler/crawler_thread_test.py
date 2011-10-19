@@ -8,13 +8,17 @@ from crawler_thread import CrawlerThread
 from models.visitable_url import VisitableURL
 from models.visited_url import VisitedURL
 
+import collections
 import functools
 import httplib
+import mock
+import Queue
 import StringIO
 import threading
 import testfixtures
 import textwrap
 import unittest
+import urllib2
 
 def MockUrlOpenWithException(exception, url):
     """Mock for urllib2.urlopen that throws an exception.
@@ -24,6 +28,13 @@ def MockUrlOpenWithException(exception, url):
     """
     if exception == 'BadStatusLine':
         raise httplib.BadStatusLine('')
+    elif exception == 'URLError':
+        raise urllib2.URLError('')
+
+def CreateFakeUrlResource(type):
+    UrlResource = collections.namedtuple('UrlResource', ['headers'])
+    resource = UrlResource(headers={'content-type': type})
+    return resource
 
 class CrawlerThreadTest(unittest.TestCase):
     def testPopVisitableURLWorks(self):
@@ -78,12 +89,41 @@ class CrawlerThreadTest(unittest.TestCase):
             database_handler, None, None, visited_url_lock)
         assert not crawler_thread.CheckURLAndMarkAsVisited(u'\xea')
 
+    def testHandleURLWorks(self):
+        mock_download_queue = mock.Mock(Queue.Queue)
+        crawler_thread = CrawlerThread(None, mock_download_queue, None, None)
+        crawler_thread.HandleHtmlResource = mock.Mock()
+        with testfixtures.Replacer() as r:
+            # HTML resource.
+            html_resource = CreateFakeUrlResource('text/html')
+            r.replace('urllib2.urlopen', mock.Mock(return_value=html_resource))
+            crawler_thread.HandleURL('http://www.fake.com/')
+            crawler_thread.HandleHtmlResource.assert_called_with(html_resource)
+            # Zip resource.
+            zip_resource = CreateFakeUrlResource('application/zip')
+            r.replace('urllib2.urlopen', mock.Mock(return_value=zip_resource))
+            crawler_thread.HandleURL('http://www.fake.com/')
+            mock_download_queue.put.assert_called_with(zip_resource)
+            # Plain text resource.
+            text_resource = CreateFakeUrlResource('text/plain')
+            r.replace('urllib2.urlopen', mock.Mock(return_value=text_resource))
+            crawler_thread.HandleURL('http://www.fake.com/')
+            mock_download_queue.put.assert_called_with(text_resource)
+
     def testHandleURLIgnoreBadStatusLine(self):
         crawler_thread = CrawlerThread(None, None, None, None)
         with testfixtures.Replacer() as r:
             r.replace('urllib2.urlopen',
                       functools.partial(MockUrlOpenWithException,
                                         'BadStatusLine'))
+            crawler_thread.HandleURL('http://www.fake.com/')
+
+    def testHandleURLIgnoreURLError(self):
+        crawler_thread = CrawlerThread(None, None, None, None)
+        with testfixtures.Replacer() as r:
+            r.replace('urllib2.urlopen',
+                      functools.partial(MockUrlOpenWithException,
+                                        'URLError'))
             crawler_thread.HandleURL('http://www.fake.com/')
 
     def testHandleHtmlResourceWorks(self):
