@@ -31,8 +31,9 @@ def GoogleSearch(developer_key, cref, query, max_results=10):
                                       cref=cref,
                                       start=first_result_in_page,
                                       num=n_results_in_page).execute()
-        print page, first_result_in_page, n_results_in_page, len(response['items'])
         for item in response['items']:
             search_results.append(
                 SearchResult(item['title'], item['snippet'], item['link']))
-    return search_results
+    # We slice the results because Google API doesn't always respect the num
+    # parameter.
+    return search_results[:max_results]

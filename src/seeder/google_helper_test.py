@@ -23,9 +23,9 @@ class GoogleSearchTest(unittest.TestCase):
                                       '017513622067795982245:_iwk5xznrk0',
                                       'Google',
                                       max_results=20)
-        assert len(search_results) == 20
+        assert len(search_results) <= 20
         search_results = GoogleSearch('AIzaSyCrGh4R7a7-ayRQyh7nXPwuBy6O7F0VqRM',
                                       '017513622067795982245:_iwk5xznrk0',
                                       'Google',
                                       max_results=13)
-        assert len(search_results) == 13
+        assert len(search_results) <= 13
