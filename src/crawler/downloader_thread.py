@@ -15,10 +15,11 @@ import threading
 import zipfile
 
 class DownloaderThread(threading.Thread):
-    def __init__(self, download_queue, download_folder):
+    def __init__(self, download_queue, download_folder, zip_size_limit):
         threading.Thread.__init__(self)
         self.download_queue_ = download_queue
         self.download_folder_ = download_folder
+        self.zip_size_limit_ = zip_size_limit
 
     def run(self):
         while True:
@@ -31,7 +32,10 @@ class DownloaderThread(threading.Thread):
             self.download_queue_.task_done()
 
     def HandleZipResource(self, resource):
-        # TODO(brunonery): limit the size of Zip files that are downloaded.
+        if not 'content-length' in resource.headers:
+            return
+        if int(resource.headers['content-length']) > self.zip_size_limit_:
+            return
         file_handle = DownloadAsTemporaryFile(resource)
         try:
             zip_handle = zipfile.ZipFile(file_handle)
