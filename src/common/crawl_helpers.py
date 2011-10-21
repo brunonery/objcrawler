@@ -7,9 +7,18 @@ import BeautifulSoup
 import md5
 import os
 import re
+import robotparser
 import tempfile
 import urlparse
 
+def CanFetchURL(url):
+    """Tells if can be fetched according to robots.txt."""
+    split_url = urlparse.urlsplit(url)
+    server_url = urlparse.urlunsplit(
+        (split_url.scheme, split_url.netloc, '', '', ''))
+    robot_parser = GetRobotParserForServer(server_url)
+    return robot_parser.can_fetch('*', url)
+    
 def DownloadAsTemporaryFile(resource):
     """Downloads a resource to a temporary file.
 
@@ -81,6 +90,20 @@ def GetLinksFromHtml(file_handle):
             link_list.append(href)
     return link_list
 
+def GetRobotParserForServer(server_url):
+    """Downloads and parses the robots.txt file for a given server.
+
+    Arguments:
+    server_url -- the server to download robots.txt from.
+
+    Returns:
+    A robotparser.RobotFileParser object.
+    """
+    robot_parser = robotparser.RobotFileParser()
+    robot_parser.set_url(urlparse.urljoin(server_url, 'robots.txt'))
+    robot_parser.read()
+    return robot_parser
+  
 def GetURLPriority(url):
     """Obtains a URL priority.
 
