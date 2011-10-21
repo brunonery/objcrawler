@@ -14,17 +14,19 @@ parser = argparse.ArgumentParser(description='Seed the crawler with URLs to be v
 parser.add_argument('--config', action='store', type=str)
 parser.add_argument('--use_google', action='store_true', default=False)
 parser.add_argument('--query', action='store', type=str)
+parser.add_argument('--max_results', action='store', type=int, default=10)
 
-def SeedWithGoogle(config, query):
+def SeedWithGoogle(config, query, max_results):
     """Seeds the database using the results from a Google Search.
 
     Arguments:
     config -- the seeder config.
     query -- the query to be performed.
+    max_results -- the maximum number of results.
     """
     # Obtain the search results.
     search_results = GoogleSearch(
-        config.google_developer_key(), config.google_cref(), query)
+        config.google_developer_key(), config.google_cref(), query, max_results)
     # Prepare the database.
     database_handler = DatabaseHandler(config.database_address())
     database_handler.Init()
@@ -40,4 +42,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
     config = SeederConfig(open(args.config))
     if args.use_google:
-        SeedWithGoogle(config, args.query)
+        SeedWithGoogle(config, args.query, args.max_results)
