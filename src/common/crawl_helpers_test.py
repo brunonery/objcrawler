@@ -89,6 +89,13 @@ class GetRobotParserForServerTest(unittest.TestCase):
     def testGetRobotParserForServerWorks(self):
         robot_parser = GetRobotParserForServer('http://www.google.com')
         assert robot_parser.can_fetch('*', 'http://www.google.com/index.html')
+
+    def testGetRobotParserForServerCachesResults(self):
+        robot_parser = GetRobotParserForServer('http://www.google.com')
+        robot_parser = GetRobotParserForServer('http://www.google.com')
+        robot_parser = GetRobotParserForServer('http://www.microsoft.com')
+        assert GetRobotParserForServer.hits == 1
+        assert GetRobotParserForServer.misses == 2
         
 class GetURLPriorityTest(unittest.TestCase):
     def testGetURLPriorityWorks(self):

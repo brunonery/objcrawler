@@ -3,6 +3,8 @@
 __author__ = "Bruno Nery"
 __email__  = "brunonery@brunonery.com"
 
+from contrib.cache_decorators import lru_cache
+
 import BeautifulSoup
 import md5
 import os
@@ -90,6 +92,7 @@ def GetLinksFromHtml(file_handle):
             link_list.append(href)
     return link_list
 
+@lru_cache()
 def GetRobotParserForServer(server_url):
     """Downloads and parses the robots.txt file for a given server.
 
