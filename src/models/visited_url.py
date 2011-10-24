@@ -14,7 +14,7 @@ class VisitedURL(Base):
     __tablename__ = 'visited_urls'
 
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
-    url_md5 = sqlalchemy.Column(sqlalchemy.Binary(16))
+    url_md5 = sqlalchemy.Column(sqlalchemy.Binary(16), index=True)
 
     def __init__(self, url):
         """Creates a VisitedURL instance.

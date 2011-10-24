@@ -13,7 +13,7 @@ class VisitableURL(Base):
 
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
     url = sqlalchemy.Column(sqlalchemy.String)
-    priority = sqlalchemy.Column(sqlalchemy.Integer)
+    priority = sqlalchemy.Column(sqlalchemy.Integer, index=True)
 
     def __init__(self, url, priority):
         """Creates a VisitableURL instance.
