@@ -15,6 +15,7 @@ parser.add_argument('--config', action='store', type=str)
 parser.add_argument('--use_google', action='store_true', default=False)
 parser.add_argument('--query', action='store', type=str)
 parser.add_argument('--max_results', action='store', type=int, default=10)
+parser.add_argument('--source_file', action='store', type=str)
 
 def SeedWithGoogle(config, query, max_results):
     """Seeds the database using the results from a Google Search.
@@ -32,9 +33,29 @@ def SeedWithGoogle(config, query, max_results):
     database_handler.Init()
     # Add the results to the database.
     session = database_handler.CreateSession()
-    for i in range(len(search_results)):
+    for result in search_results:
         # Seed results always have the highest priority.
-        session.add(VisitableURL(search_results[i].link, 0))
+        session.add(VisitableURL(result.link, 0))
+    session.commit()
+
+def SeedWithList(config, filename):
+    """Seeds the database using the links from a text file.
+
+    Arguments:
+    config -- the seeder config.
+    filename -- the name of the file to be read.
+    """
+    f = open(filename, 'r')
+    link_list = f.readlines()
+    f.close()
+    # Prepare the database.
+    database_handler = DatabaseHandler(config.database_address())
+    database_handler.Init()
+    # Add the results to the database.
+    session = database_handler.CreateSession()
+    for link in link_list:
+        # Seed results always have the highest priority.
+        session.add(VisitableURL(link, 0))
     session.commit()
 
 if __name__ == "__main__":
@@ -43,3 +64,5 @@ if __name__ == "__main__":
     config = SeederConfig(open(args.config))
     if args.use_google:
         SeedWithGoogle(config, args.query, args.max_results)
+    else:
+        SeedWithList(config, args.source_file)
