@@ -137,6 +137,11 @@ class CrawlerThreadTest(unittest.TestCase):
             assert mock_can_fetch_url.called
             assert not mock_url_open.called
 
+    def testHandleURLWithXeaWorks(self):
+        crawler_thread = CrawlerThread(None, None, None, None)
+        crawler_thread.HandleURL(u'http://\xea')
+        # TODO(brunonery): add assert for logging.
+
     def testHandleHtmlResourceWorks(self):
         # Create test database and lock.
         database_handler = DatabaseHandler('sqlite:///:memory:')

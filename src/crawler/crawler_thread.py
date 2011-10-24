@@ -94,10 +94,11 @@ class CrawlerThread(threading.Thread):
         url -- the URL of the resource to be processed.
         """
         # Avoid fetching URLs not allowed by a robots.txt file.
-        if not CanFetchURL(url):
+        # TODO(brunonery): find a way of encode('utf-8') automagically.
+        if not CanFetchURL(url.encode('utf-8')):
             return
         try:
-            resource = urllib2.urlopen(url)
+            resource = urllib2.urlopen(url.encode('utf-8'))
         except urllib2.URLError as url_error:
             logging.warning('Problem opening %s (%s).', url, url_error)
             return
