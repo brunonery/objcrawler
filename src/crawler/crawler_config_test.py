@@ -15,7 +15,9 @@ class CrawlerConfigTest(unittest.TestCase):
         [General]
         database_address: my_database_address
         download_folder: my_download_folder
+        zip_size_limit: 30000
         """))
         config = CrawlerConfig(file_handle)
         assert config.database_address() == 'my_database_address'
         assert config.download_folder() == 'my_download_folder'
+        assert config.zip_size_limit() == 30000

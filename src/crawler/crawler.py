@@ -41,7 +41,8 @@ if __name__ == "__main__":
     # TODO(brunonery): have different number of crawler and downloader threads.
     for i in range(args.instances):
         current_thread = DownloaderThread(download_queue,
-                                          config.download_folder())
+                                          config.download_folder(),
+                                          config.zip_size_limit())
         current_thread.daemon = True
         downloader_thread_list.append(current_thread)
         current_thread.start()
