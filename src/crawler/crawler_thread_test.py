@@ -126,6 +126,11 @@ class CrawlerThreadTest(unittest.TestCase):
                                         'URLError'))
             crawler_thread.HandleURL('http://www.fake.com/')
 
+    def testHandleURLWithXeaWorks(self):
+        crawler_thread = CrawlerThread(None, None, None, None)
+        crawler_thread.HandleURL(u'http://\xea')
+        # TODO(brunonery): add assert for logging.
+
     def testHandleHtmlResourceWorks(self):
         # Create test database and lock.
         database_handler = DatabaseHandler('sqlite:///:memory:')

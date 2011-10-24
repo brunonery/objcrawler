@@ -93,7 +93,7 @@ class CrawlerThread(threading.Thread):
         url -- the URL of the resource to be processed.
         """
         try:
-            resource = urllib2.urlopen(url)
+            resource = urllib2.urlopen(url.encode('utf-8'))
         except urllib2.URLError as url_error:
             logging.warning('Problem opening %s (%s).', url, url_error)
             return
