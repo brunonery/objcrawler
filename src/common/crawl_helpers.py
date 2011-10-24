@@ -6,6 +6,7 @@ __email__  = "brunonery@brunonery.com"
 from contrib.cache_decorators import lru_cache
 
 import BeautifulSoup
+import logging
 import md5
 import os
 import re
@@ -19,7 +20,11 @@ def CanFetchURL(url):
     server_url = urlparse.urlunsplit(
         (split_url.scheme, split_url.netloc, '', '', ''))
     robot_parser = GetRobotParserForServer(server_url)
-    return robot_parser.can_fetch('*', url)
+    # If robots.txt cannot be fetched, any URL can be fetched from the server.
+    if robot_parser is None:
+        return True
+    else:
+        return robot_parser.can_fetch('*', url)
     
 def DownloadAsTemporaryFile(resource):
     """Downloads a resource to a temporary file.
@@ -100,11 +105,17 @@ def GetRobotParserForServer(server_url):
     server_url -- the server to download robots.txt from.
 
     Returns:
-    A robotparser.RobotFileParser object.
+    A robotparser.RobotFileParser object. None, if it cannot obtain the
+    robots.txt file for some reason.
     """
     robot_parser = robotparser.RobotFileParser()
     robot_parser.set_url(urlparse.urljoin(server_url, 'robots.txt'))
-    robot_parser.read()
+    try:
+        robot_parser.read()
+    except IOError as io_error:
+        logging.warning(
+            'IOError getting robots.txt for %s (%s).', server_url, io_error)
+        return None
     return robot_parser
   
 def GetURLPriority(url):
