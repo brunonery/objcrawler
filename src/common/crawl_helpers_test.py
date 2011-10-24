@@ -30,6 +30,14 @@ class CanFetchURLTest(unittest.TestCase):
             mock_get_robot_parser.assert_called_with('http://www.test.com')
             robot_parser.can_fetch.assert_called_with(
                 '*', 'http://www.test.com/index.html')
+            
+    def testCanAlwaysFetchWithoutRobotParser(self):
+        with testfixtures.Replacer() as r:
+            mock_get_robot_parser = mock.Mock(return_value=None)
+            r.replace('common.crawl_helpers.GetRobotParserForServer',
+                      mock_get_robot_parser)
+            assert CanFetchURL('http://www.test.com/index.html')
+            mock_get_robot_parser.assert_called_with('http://www.test.com')
 
 class DownloadAsTemporaryFileTest(unittest.TestCase):
     def testDownloadAsTemporaryFileWorks(self):
@@ -96,6 +104,19 @@ class GetRobotParserForServerTest(unittest.TestCase):
         robot_parser = GetRobotParserForServer('http://www.microsoft.com')
         assert GetRobotParserForServer.hits == 1
         assert GetRobotParserForServer.misses == 2
+
+    def testGetRobotParserForServerHandlesIOError(self):
+        def MockRaiseIOError():
+            raise IOError('error')
+        
+        mock_robot_parser = mock.Mock()
+        mock_robot_parser.set_url = mock.Mock()
+        mock_robot_parser.read = MockRaiseIOError
+        with testfixtures.Replacer() as r:
+            r.replace('robotparser.RobotFileParser', mock.Mock(return_value=mock_robot_parser))
+            assert GetRobotParserForServer('http://www.test.com') == None
+            assert mock_robot_parser.set_url.called
+            # TODO(brunonery): assert that logging was called.
         
 class GetURLPriorityTest(unittest.TestCase):
     def testGetURLPriorityWorks(self):
