@@ -3,6 +3,7 @@
 __author__ = "Bruno Nery"
 __email__  = "brunonery@brunonery.com"
 
+from common.crawl_helpers import CanFetchURL
 from common.crawl_helpers import GetLinksFromHtml
 from common.crawl_helpers import GetURLPriority
 from models.visitable_url import VisitableURL
@@ -92,6 +93,9 @@ class CrawlerThread(threading.Thread):
         Arguments:
         url -- the URL of the resource to be processed.
         """
+        # Avoid fetching URLs not allowed by a robots.txt file.
+        if not CanFetchURL(url):
+            return
         try:
             resource = urllib2.urlopen(url)
         except urllib2.URLError as url_error:

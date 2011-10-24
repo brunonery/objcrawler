@@ -126,6 +126,17 @@ class CrawlerThreadTest(unittest.TestCase):
                                         'URLError'))
             crawler_thread.HandleURL('http://www.fake.com/')
 
+    def testHandleURLIgnoreNonFetchableURL(self):
+        crawler_thread = CrawlerThread(None, None, None, None)
+        with testfixtures.Replacer() as r:
+            mock_url_open = mock.Mock()
+            r.replace('urllib2.urlopen', mock_url_open)
+            mock_can_fetch_url = mock.Mock(return_value=False)
+            r.replace('crawler.crawler_thread.CanFetchURL', mock_can_fetch_url)
+            crawler_thread.HandleURL('http://www.fake.com/')
+            assert mock_can_fetch_url.called
+            assert not mock_url_open.called
+
     def testHandleHtmlResourceWorks(self):
         # Create test database and lock.
         database_handler = DatabaseHandler('sqlite:///:memory:')

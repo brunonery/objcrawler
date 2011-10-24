@@ -3,16 +3,33 @@
 __author__ = "Bruno Nery"
 __email__  = "brunonery@brunonery.com"
 
+from crawl_helpers import CanFetchURL
 from crawl_helpers import DownloadAsTemporaryFile
 from crawl_helpers import FilterListBySuffix
 from crawl_helpers import GenerateBlenderFilenameFromURL
 from crawl_helpers import GetLinksFromHtml
+from crawl_helpers import GetRobotParserForServer
 from crawl_helpers import GetURLPriority
 from crawl_helpers import IsBlenderFile
 
 import StringIO
+import mock
+import testfixtures
 import unittest
 import urllib2
+
+class CanFetchURLTest(unittest.TestCase):
+    def testCanFetchURLWorks(self):
+        robot_parser = mock.Mock()
+        robot_parser.can_fetch = mock.Mock(return_value=True)
+        with testfixtures.Replacer() as r:
+            mock_get_robot_parser = mock.Mock(return_value=robot_parser)
+            r.replace('common.crawl_helpers.GetRobotParserForServer',
+                      mock_get_robot_parser)
+            assert CanFetchURL('http://www.test.com/index.html')
+            mock_get_robot_parser.assert_called_with('http://www.test.com')
+            robot_parser.can_fetch.assert_called_with(
+                '*', 'http://www.test.com/index.html')
 
 class DownloadAsTemporaryFileTest(unittest.TestCase):
     def testDownloadAsTemporaryFileWorks(self):
@@ -68,6 +85,18 @@ class GetLinksFromHtmlTest(unittest.TestCase):
         link_list = GetLinksFromHtml(file_handle)
         assert len(link_list) == 0
 
+class GetRobotParserForServerTest(unittest.TestCase):
+    def testGetRobotParserForServerWorks(self):
+        robot_parser = GetRobotParserForServer('http://www.google.com')
+        assert robot_parser.can_fetch('*', 'http://www.google.com/index.html')
+
+    def testGetRobotParserForServerCachesResults(self):
+        robot_parser = GetRobotParserForServer('http://www.google.com')
+        robot_parser = GetRobotParserForServer('http://www.google.com')
+        robot_parser = GetRobotParserForServer('http://www.microsoft.com')
+        assert GetRobotParserForServer.hits == 1
+        assert GetRobotParserForServer.misses == 2
+        
 class GetURLPriorityTest(unittest.TestCase):
     def testGetURLPriorityWorks(self):
         assert GetURLPriority('test.zip') == 1
