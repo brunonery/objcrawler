@@ -24,8 +24,7 @@ if __name__ == "__main__":
     # Prepare database and locks.
     database_handler = DatabaseHandler(config.database_address())
     database_handler.Init()
-    visitable_url_lock = threading.Lock()
-    visited_url_lock = threading.Lock()
+    url_lock = threading.Lock()
     # Prepare download queue.
     download_queue = Queue.Queue()
     # Start all threads.
@@ -33,8 +32,7 @@ if __name__ == "__main__":
     for i in range(args.instances):
         current_thread = CrawlerThread(database_handler,
                                        download_queue,
-                                       visitable_url_lock,
-                                       visited_url_lock)
+                                       url_lock)
         crawler_thread_list.append(current_thread)
         current_thread.start()
     downloader_thread_list = []
