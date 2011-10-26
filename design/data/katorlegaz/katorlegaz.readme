@@ -1,0 +1,13 @@
+This table contains the minimum, mean, median and max sizes for a set of 248 3D
+Blender models obtained from http://www.katorlegaz.com/3d_models/ on October
+13th, 2011. The katorlegaz_distribution.pdf file shows the approximate
+distribution of file sizes for the different formats. For the same data with a
+zoom under 1000KB, look at katorlegaz_distribution_zoom.pdf.
+
+format min   mean median   max
+==============================
+blend   96 594.79  200.0 11144
+zip     28 282.45   64.0  9892
+rar     24 227.86   44.0  9716
+tgz     28 282.40   64.0  9892
+tbz     28 274.71   64.0  9912
