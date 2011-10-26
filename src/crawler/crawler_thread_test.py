@@ -52,14 +52,10 @@ class CrawlerThreadTest(unittest.TestCase):
         crawler_thread = CrawlerThread(
             self.database_handler, None, self.url_lock)
         the_url = crawler_thread.PopNextURLAndMarkAsVisited()
-        assert the_url.url == 'http://www.google.com/'
-        assert the_url.priority == 1
-        assert the_url.visited == True
+        assert the_url == 'http://www.google.com/'
         # Test second pop.
         the_url = crawler_thread.PopNextURLAndMarkAsVisited()
-        assert the_url.url == 'http://www.microsoft.com/'
-        assert the_url.priority == 2
-        assert the_url.visited == True
+        assert the_url == 'http://www.microsoft.com/'
         # No more pops.
         the_url = crawler_thread.PopNextURLAndMarkAsVisited()
         assert the_url == None
@@ -68,7 +64,7 @@ class CrawlerThreadTest(unittest.TestCase):
         # Populate the test database.
         session = self.database_handler.CreateSession()
         the_url = URL('http://www.microsoft.com/', 1)
-        the_url.links_to = 666
+        the_url.links_to = 500
         session.add(the_url)
         the_url = URL('http://www.google.com/', 1)
         the_url.links_to = 1000
@@ -78,14 +74,10 @@ class CrawlerThreadTest(unittest.TestCase):
         crawler_thread = CrawlerThread(
             self.database_handler, None, self.url_lock)
         the_url = crawler_thread.PopNextURLAndMarkAsVisited()
-        assert the_url.url == 'http://www.google.com/'
-        assert the_url.links_to == 1000
-        assert the_url.visited == True
+        assert the_url == 'http://www.google.com/'
         # Test second pop.
         the_url = crawler_thread.PopNextURLAndMarkAsVisited()
-        assert the_url.url == 'http://www.microsoft.com/'
-        assert the_url.links_to == 666
-        assert the_url.visited == True
+        assert the_url == 'http://www.microsoft.com/'
 
     def testHandleURLWorks(self):
         mock_download_queue = mock.Mock(Queue.Queue)

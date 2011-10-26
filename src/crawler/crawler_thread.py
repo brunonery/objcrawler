@@ -36,7 +36,7 @@ class CrawlerThread(threading.Thread):
             # No more URLs to be visited.
             if not next_url:
                 break
-            self.HandleURL(next_url.url)
+            self.HandleURL(next_url)
         # Wait for all remaining items to be processed.
         self.download_queue_.join()
 
@@ -44,18 +44,21 @@ class CrawlerThread(threading.Thread):
         """Get the next URL to be visited and mark it as visited.
         
         Returns:
-        A URL instance containing the URL with the highest priority and the
-        biggest link_to count.
+        A URL address containing the URL with the highest priority and the
+        biggest link_to count. None if there is no more URLs in the database.
         """
         self.url_lock_.acquire()
         session = self.database_handler_.CreateSession()
         query = session.query(URL)
         results = query.filter(URL.visited == False).order_by(
             URL.priority, URL.links_to.desc())
-        the_url = results.first()
-        if the_url:
-            the_url.visited = True
+        url_record = results.first()
+        if url_record:
+            url_record.visited = True
+            the_url = url_record.url
             session.commit()
+        else:
+            the_url = None
         self.url_lock_.release()
         return the_url
 
