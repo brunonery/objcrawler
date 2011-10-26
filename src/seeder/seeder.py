@@ -5,7 +5,7 @@ __email__  = "brunonery@brunonery.com"
 
 from common.database_handler import DatabaseHandler
 from google_helper import GoogleSearch
-from models.visitable_url import VisitableURL
+from models.url import URL
 from seeder_config import SeederConfig
 
 import argparse
@@ -32,7 +32,7 @@ def SeedWithGoogle(config, query):
     session = database_handler.CreateSession()
     for i in range(len(search_results)):
         # Seed results always have the highest priority.
-        session.add(VisitableURL(search_results[i].link, 0))
+        session.add(URL(search_results[i].link, 0))
     session.commit()
 
 if __name__ == "__main__":

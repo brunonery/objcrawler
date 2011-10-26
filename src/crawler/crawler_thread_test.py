@@ -5,8 +5,7 @@ __email__  = "brunonery@brunonery.com"
 
 from common.database_handler import DatabaseHandler
 from crawler_thread import CrawlerThread
-from models.visitable_url import VisitableURL
-from models.visited_url import VisitedURL
+from models.url import URL
 
 import collections
 import functools
@@ -37,61 +36,60 @@ def CreateFakeURLResource(type):
     return resource
 
 class CrawlerThreadTest(unittest.TestCase):
-    def testPopVisitableURLWorks(self):
+    def setUp(self):
         # Create test database and lock.
-        database_handler = DatabaseHandler('sqlite:///:memory:')
-        database_handler.Init()
-        visitable_url_lock = threading.Lock()
+        self.database_handler = DatabaseHandler('sqlite:///:memory:')
+        self.database_handler.Init()
+        self.url_lock = threading.Lock()
+        
+    def testPopNextURLAndMarkAsVisited(self):
         # Populate the test database.
-        session = database_handler.CreateSession()
-        session.add(VisitableURL('http://www.microsoft.com/', 2))
-        session.add(VisitableURL('http://www.google.com/', 1))
+        session = self.database_handler.CreateSession()
+        session.add(URL('http://www.microsoft.com/', 2))
+        session.add(URL('http://www.google.com/', 1))
         session.commit()
          # Test pop.
         crawler_thread = CrawlerThread(
-            database_handler, None, visitable_url_lock, None)
-        the_url = crawler_thread.PopVisitableURL()
+            self.database_handler, None, self.url_lock)
+        the_url = crawler_thread.PopNextURLAndMarkAsVisited()
         assert the_url.url == 'http://www.google.com/'
         assert the_url.priority == 1
+        assert the_url.visited == True
         # Test second pop.
-        the_url = crawler_thread.PopVisitableURL()
+        the_url = crawler_thread.PopNextURLAndMarkAsVisited()
         assert the_url.url == 'http://www.microsoft.com/'
         assert the_url.priority == 2
+        assert the_url.visited == True
         # No more pops.
-        the_url = crawler_thread.PopVisitableURL()
+        the_url = crawler_thread.PopNextURLAndMarkAsVisited()
         assert the_url == None
 
-    def testCheckURLAndMarkAsVisitedWorks(self):
-        # Create test database and lock.
-        database_handler = DatabaseHandler('sqlite:///:memory:')
-        database_handler.Init()
-        visited_url_lock = threading.Lock()
+    def testPopNextURLAndMarkAsVisitedHandlesCount(self):
         # Populate the test database.
-        session = database_handler.CreateSession()
-        session.add(VisitedURL('http://www.microsoft.com/'))
-        session.add(VisitedURL('http://www.google.com/'))
+        session = self.database_handler.CreateSession()
+        the_url = URL('http://www.microsoft.com/', 1)
+        the_url.links_to = 666
+        session.add(the_url)
+        the_url = URL('http://www.google.com/', 1)
+        the_url.links_to = 1000
+        session.add(the_url)
         session.commit()
-         # Test check.
+         # Test pop.
         crawler_thread = CrawlerThread(
-            database_handler, None, None, visited_url_lock)
-        assert crawler_thread.CheckURLAndMarkAsVisited('http://www.google.com/') 
-        assert crawler_thread.CheckURLAndMarkAsVisited('http://www.microsoft.com/')
-        assert not crawler_thread.CheckURLAndMarkAsVisited('http://www.facebook.com/')
-        assert crawler_thread.CheckURLAndMarkAsVisited('http://www.facebook.com/')
-
-    def testCheckURLAndMarkAsVisitedWithXeaWorks(self):
-        # Create test database and lock.
-        database_handler = DatabaseHandler('sqlite:///:memory:')
-        database_handler.Init()
-        visited_url_lock = threading.Lock()
-         # Test check.
-        crawler_thread = CrawlerThread(
-            database_handler, None, None, visited_url_lock)
-        assert not crawler_thread.CheckURLAndMarkAsVisited(u'\xea')
+            self.database_handler, None, self.url_lock)
+        the_url = crawler_thread.PopNextURLAndMarkAsVisited()
+        assert the_url.url == 'http://www.google.com/'
+        assert the_url.links_to == 1000
+        assert the_url.visited == True
+        # Test second pop.
+        the_url = crawler_thread.PopNextURLAndMarkAsVisited()
+        assert the_url.url == 'http://www.microsoft.com/'
+        assert the_url.links_to == 666
+        assert the_url.visited == True
 
     def testHandleURLWorks(self):
         mock_download_queue = mock.Mock(Queue.Queue)
-        crawler_thread = CrawlerThread(None, mock_download_queue, None, None)
+        crawler_thread = CrawlerThread(None, mock_download_queue, None)
         crawler_thread.HandleHtmlResource = mock.Mock()
         with testfixtures.Replacer() as r:
             # HTML resource.
@@ -111,7 +109,7 @@ class CrawlerThreadTest(unittest.TestCase):
             mock_download_queue.put.assert_called_with(text_resource)
 
     def testHandleURLIgnoreBadStatusLine(self):
-        crawler_thread = CrawlerThread(None, None, None, None)
+        crawler_thread = CrawlerThread(None, None, None)
         with testfixtures.Replacer() as r:
             r.replace('urllib2.urlopen',
                       functools.partial(MockURLOpenWithException,
@@ -119,7 +117,7 @@ class CrawlerThreadTest(unittest.TestCase):
             crawler_thread.HandleURL('http://www.fake.com/')
 
     def testHandleURLIgnoreURLError(self):
-        crawler_thread = CrawlerThread(None, None, None, None)
+        crawler_thread = CrawlerThread(None, None, None)
         with testfixtures.Replacer() as r:
             r.replace('urllib2.urlopen',
                       functools.partial(MockURLOpenWithException,
@@ -127,10 +125,6 @@ class CrawlerThreadTest(unittest.TestCase):
             crawler_thread.HandleURL('http://www.fake.com/')
 
     def testHandleHtmlResourceWorks(self):
-        # Create test database and lock.
-        database_handler = DatabaseHandler('sqlite:///:memory:')
-        database_handler.Init()
-        visitable_url_lock = threading.Lock()
         # Create test file.
         file_handle = StringIO.StringIO(textwrap.dedent("""
         <a href='http://www.google.com/'>Google</a>
@@ -140,10 +134,32 @@ class CrawlerThreadTest(unittest.TestCase):
         file_handle.url = 'http://www.test.com'
          # Test handling of HTML resource.
         crawler_thread = CrawlerThread(
-            database_handler, None, visitable_url_lock, None)
+            self.database_handler, None, self.url_lock)
         crawler_thread.HandleHtmlResource(file_handle)
-        session = database_handler.CreateSession()
-        query = session.query(VisitableURL)
-        assert query.filter(VisitableURL.url == 'http://www.google.com/').count() == 1
-        assert query.filter(VisitableURL.url == 'http://www.microsoft.com/').count() == 1
-        assert query.filter(VisitableURL.url == 'http://www.test.com/links.html').count() == 1
+        session = self.database_handler.CreateSession()
+        query = session.query(URL)
+        assert query.filter(URL.url == 'http://www.google.com/').count() == 1
+        assert query.filter(URL.url == 'http://www.microsoft.com/').count() == 1
+        assert query.filter(URL.url == 'http://www.test.com/links.html').count() == 1
+
+    def testHandleHtmlResourceIncrementsLinksTo(self):
+        # Populate the test database.
+        session = self.database_handler.CreateSession()
+        the_url = URL('http://www.google.com/', 1)
+        the_url.links_to = 1000
+        session.add(the_url)
+        session.commit()
+        # Create test file.
+        file_handle = StringIO.StringIO(textwrap.dedent("""
+        <a href='http://www.google.com/'>Google</a>
+        """))
+        file_handle.url = 'http://www.test.com'
+        # Test handling of HTML resource.
+        crawler_thread = CrawlerThread(
+            self.database_handler, None, self.url_lock)
+        crawler_thread.HandleHtmlResource(file_handle)
+        query = session.query(URL)
+        results = query.filter(URL.url == 'http://www.google.com/')
+        assert results.count() == 1
+        the_url = results.first()
+        assert the_url.links_to == 1001

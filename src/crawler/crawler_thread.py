@@ -5,8 +5,7 @@ __email__  = "brunonery@brunonery.com"
 
 from common.crawl_helpers import GetLinksFromHtml
 from common.crawl_helpers import GetURLPriority
-from models.visitable_url import VisitableURL
-from models.visited_url import VisitedURL
+from models.url import URL
 
 import httplib
 import logging
@@ -18,73 +17,46 @@ class CrawlerThread(threading.Thread):
     def __init__(self,
                  database_handler,
                  download_queue,
-                 visitable_url_lock,
-                 visited_url_lock):
+                 url_lock):
         """Builds a CrawlerThread instance.
 
         Arguments:
         database_handler -- the database to connect to.
-        visitable_url_lock -- the thread lock for the visitable_urls table.
-        visited_url_lock -- the thread lock for the visited_urls table.
+        url_lock -- the thread lock for the urls table.
         """
         threading.Thread.__init__(self)
         self.database_handler_ = database_handler
         self.download_queue_ = download_queue
-        self.visitable_url_lock_ = visitable_url_lock
-        self.visited_url_lock_ = visited_url_lock
+        self.url_lock_ = url_lock
 
     def run(self):
         while True:
-            next_url = self.PopVisitableURL()
+            next_url = self.PopNextURLAndMarkAsVisited()
             # No more URLs to be visited.
             if not next_url:
                 break
-            # Avoid visiting an URL more than once.
-            if self.CheckURLAndMarkAsVisited(next_url.url):
-                continue
             self.HandleURL(next_url.url)
         # Wait for all remaining items to be processed.
         self.download_queue_.join()
 
-    def PopVisitableURL(self):
-        """Pop the highest priority URL from visitable_urls table.
+    def PopNextURLAndMarkAsVisited(self):
+        """Get the next URL to be visited and mark it as visited.
         
         Returns:
-        A VisitableURL instance containing the highest priority URL. None if the
-        table is empty.
+        A URL instance containing the URL with the highest priority and the
+        biggest link_to count.
         """
-        self.visitable_url_lock_.acquire()
+        self.url_lock_.acquire()
         session = self.database_handler_.CreateSession()
-        query = session.query(VisitableURL).order_by(VisitableURL.priority)
-        the_url = query.first()
+        query = session.query(URL)
+        results = query.filter(URL.visited == False).order_by(
+            URL.priority, URL.links_to.desc())
+        the_url = results.first()
         if the_url:
-            session.delete(the_url)
+            the_url.visited = True
             session.commit()
-        self.visitable_url_lock_.release()
+        self.url_lock_.release()
         return the_url
-
-    def CheckURLAndMarkAsVisited(self, url):
-        """Check if the URL has already been visited and mark it as visited.
-
-        Arguments:
-        url -- the URL to be checked.
-        
-        Returns:
-        True if the URL was already visited. False otherwise.
-        """
-        self.visited_url_lock_.acquire()
-        the_url = VisitedURL(url)
-        session = self.database_handler_.CreateSession()
-        query = session.query(VisitedURL)
-        result = query.filter(VisitedURL.url_md5 == the_url.url_md5)
-        if result.count() == 0:
-            url_is_visited = False
-            session.add(the_url)
-            session.commit()
-        else:
-            url_is_visited = True
-        self.visited_url_lock_.release()
-        return url_is_visited
 
     def HandleURL(self, url):
         """Obtain URL resource and handle it according to type.
@@ -119,11 +91,17 @@ class CrawlerThread(threading.Thread):
         """
         link_list = GetLinksFromHtml(resource)
         resource.close()
-        self.visitable_url_lock_.acquire()
+        self.url_lock_.acquire()
         session = self.database_handler_.CreateSession()
         for i in range(len(link_list)):
-            session.add(VisitableURL(urlparse.urljoin(resource.url,
-                                                      link_list[i]),
-                                     GetURLPriority(link_list[i])))
+            new_url = URL(urlparse.urljoin(resource.url, link_list[i]),
+                          GetURLPriority(link_list[i]))
+            query = session.query(URL)
+            result = query.filter(URL.url_md5 == new_url.url_md5)
+            if result.count() == 0:
+                session.add(new_url)
+            else:
+                the_url = result.first()
+                the_url.links_to += 1
         session.commit()
-        self.visitable_url_lock_.release()
+        self.url_lock_.release()
