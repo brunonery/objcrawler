@@ -130,5 +130,8 @@ def IsBlenderFile(file_handle):
 
     Returns:
     True if the file is a blender one, False otherwise.
+
+    Side effects:
+    Seek forward 7 bytes in the file_handle stream.
     """
     return (file_handle.read(7) == 'BLENDER')
