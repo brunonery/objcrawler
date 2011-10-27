@@ -79,20 +79,24 @@ class GenerateBlenderFilenameFromURLTest(unittest.TestCase):
 
 class GetLinksFromHtmlTest(unittest.TestCase):
     def testGetLinksFromHtmlWorks(self):
-        file_handle = StringIO.StringIO('<a href="http://www.test.com">')
+        file_handle = StringIO.StringIO('<a href="http://www.test.com">t</a>')
         link_list = GetLinksFromHtml(file_handle)
-        assert len(link_list) == 1
-        assert link_list[0] == 'http://www.test.com'
+        self.assertIn('http://www.test.com', link_list)
+
+    def testEmptyLinkIsIgnored(self):
+        file_handle = StringIO.StringIO('<a href=></a><a href=""></a>')
+        link_list = GetLinksFromHtml(file_handle)
+        self.assertEqual(0, len(list(link_list)))
 
     def testSectionLinksAreIgnored(self):
-        file_handle = StringIO.StringIO('<a href="#section">')
+        file_handle = StringIO.StringIO('<a href="#section">s</a>')
         link_list = GetLinksFromHtml(file_handle)
-        assert len(link_list) == 0
+        self.assertEqual(0, len(list(link_list)))
 
     def testSectionMarksAreIgnored(self):
-        file_handle = StringIO.StringIO('<a name="section">')
+        file_handle = StringIO.StringIO('<a name="section"/>')
         link_list = GetLinksFromHtml(file_handle)
-        assert len(link_list) == 0
+        self.assertEqual(0, len(list(link_list)))
 
 class GetRobotParserForServerTest(unittest.TestCase):
     def testGetRobotParserForServerWorks(self):

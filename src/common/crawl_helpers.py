@@ -79,17 +79,12 @@ def GetLinksFromHtml(file_handle):
     file_handle -- a handle to the HTML file.
 
     Returns:
-    A list containing the links contained in the HTML file.
+    A generator containing the links from the HTML file.
     """
     soup = BeautifulSoup.BeautifulSoup(file_handle)
-    link_list = []
-    # Check only <a ...> tags with a 'href' attribute.
-    for link in soup.findAll("a", attrs={'href': re.compile(".*")}):
-        href = link['href']
-        # Ignore section links.
-        if not href.startswith('#'):
-            link_list.append(href)
-    return link_list
+    # Check only <a ...> tags with a 'href' attribute, ignoring section links.
+    return (link['href'] for link in
+            soup.findAll("a", attrs={'href': re.compile('^[^#].*')}))
 
 @lru_cache()
 def GetRobotParserForServer(server_url):

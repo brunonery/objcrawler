@@ -101,9 +101,9 @@ class CrawlerThread(threading.Thread):
         resource.close()
         self.url_lock_.acquire()
         session = self.database_handler_.CreateSession()
-        for i in range(len(link_list)):
-            new_url = URL(urlparse.urljoin(resource.url, link_list[i]),
-                          GetURLPriority(link_list[i]))
+        for link in link_list:
+            new_url = URL(urlparse.urljoin(resource.url, link),
+                          GetURLPriority(link))
             query = session.query(URL)
             result = query.filter(URL.url_md5 == new_url.url_md5)
             if result.count() == 0:
