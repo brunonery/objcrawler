@@ -42,15 +42,13 @@ class CanFetchURLTest(unittest.TestCase):
 class DownloadAsTemporaryFileTest(unittest.TestCase):
     def testDownloadAsTemporaryFileWorks(self):
         test_file = StringIO.StringIO('content')
-        file_handle = DownloadAsTemporaryFile(test_file)
-        self.assertEqual('content', file_handle.read())
-        file_handle.close()
+        with DownloadAsTemporaryFile(test_file) as file_handle:
+            self.assertEqual('content', file_handle.read())
 
     def testDownloadURLAsTemporaryFileWorks(self):
         test_file = urllib2.urlopen('http://www.google.com')
-        file_handle = DownloadAsTemporaryFile(test_file)
-        self.assertEqual('<!doctype html>', file_handle.read(15))
-        file_handle.close()
+        with DownloadAsTemporaryFile(test_file) as file_handle:
+            self.assertEqual('<!doctype html>', file_handle.read(15))
         
 class FilterListBySuffixTest(unittest.TestCase):
     def setUp(self):
