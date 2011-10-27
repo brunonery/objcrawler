@@ -24,6 +24,7 @@ class DownloaderThreadTest(unittest.TestCase):
         downloader_thread.HandleZipResource(file_handle)
         self.assertTrue(os.path.exists('test/tmp/sample.blend'))
         self.assertFalse(os.path.exists('test/tmp/sample.txt'))
+        self.assertTrue(file_handle.closed)
 
     def testHandleZipResourceIgnoresNonZipFiles(self):
         # Create non-Zip resource.
@@ -33,6 +34,7 @@ class DownloaderThreadTest(unittest.TestCase):
         # Test the Zip handler.
         downloader_thread = DownloaderThread(None, None, self.zip_size_limit)
         downloader_thread.HandleZipResource(file_handle)
+        self.assertTrue(file_handle.closed)
 
     def testHandleZipResourceIgnoresFaultyZipFiles(self):
         # Open Zip resource.
@@ -42,6 +44,7 @@ class DownloaderThreadTest(unittest.TestCase):
         # Test the Zip handler.
         downloader_thread = DownloaderThread(None, None, self.zip_size_limit)
         downloader_thread.HandleZipResource(file_handle)
+        self.assertTrue(file_handle.closed)
 
     def testHandleZipResourceIgnoresBigFiles(self):
         # Create non-Zip resource.
@@ -55,6 +58,7 @@ class DownloaderThreadTest(unittest.TestCase):
                       mock_download_as_temporary_file)
             downloader_thread.HandleZipResource(file_handle)
             self.assertFalse(mock_download_as_temporary_file.called)
+        self.assertTrue(file_handle.closed)
     
     def testHandlePlainTextResourceWorks(self):
         downloader_thread = DownloaderThread(None, None, 0)
@@ -72,5 +76,7 @@ class DownloaderThreadTest(unittest.TestCase):
                       mock.Mock(return_value='fake.blend'))
             fake_handle = StringIO.StringIO('')
             fake_handle.url = 'fake.blend'
+            fake_handle.close = mock.Mock()
             downloader_thread.HandleBlenderResource(fake_handle)
             self.assertTrue(os.path.exists('test/tmp/fake.blend'))
+            self.assertTrue(fake_handle.close.called)

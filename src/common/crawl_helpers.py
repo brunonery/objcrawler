@@ -34,6 +34,9 @@ def DownloadAsTemporaryFile(resource):
 
     Returns:
     A handle to the temporary file.
+
+    Side effects:
+    Closes the resource.
     """
     file_handle = tempfile.TemporaryFile()
     file_handle.write(resource.read())

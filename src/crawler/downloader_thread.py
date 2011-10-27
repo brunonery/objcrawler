@@ -32,9 +32,9 @@ class DownloaderThread(threading.Thread):
             self.download_queue_.task_done()
 
     def HandleZipResource(self, resource):
-        if not 'content-length' in resource.headers:
-            return
-        if int(resource.headers['content-length']) > self.zip_size_limit_:
+        if ('content-length' not in resource.headers or
+            int(resource.headers['content-length']) > self.zip_size_limit_):
+            resource.close()
             return
         file_handle = DownloadAsTemporaryFile(resource)
         try:
