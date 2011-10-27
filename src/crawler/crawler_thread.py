@@ -34,7 +34,7 @@ class CrawlerThread(threading.Thread):
         while True:
             next_url = self.PopNextURLAndMarkAsVisited()
             # No more URLs to be visited.
-            if not next_url:
+            if next_url is None:
                 break
             self.HandleURL(next_url)
         # Wait for all remaining items to be processed.
@@ -45,7 +45,7 @@ class CrawlerThread(threading.Thread):
         
         Returns:
         A URL address containing the URL with the highest priority and the
-        biggest link_to count. None if there is no more URLs in the database.
+        biggest link_to count. None if there are no more URLs in the database.
         """
         self.url_lock_.acquire()
         session = self.database_handler_.CreateSession()
