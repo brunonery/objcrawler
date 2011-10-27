@@ -61,9 +61,10 @@ class FilterListBySuffixTest(unittest.TestCase):
         
     def testFilterListBySuffixWorks(self):
         new_list = FilterListBySuffix(self.items, '.suffix1')
-        assert len(new_list) == 2
-        assert new_list[0] == 'string1.suffix1'
-        assert new_list[1] == 'string2.suffix1'
+        self.assertIn('string1.suffix1', new_list)
+        self.assertIn('string2.suffix1', new_list)
+        self.assertNotIn('string3.suffix2', new_list)
+        self.assertNotIn('string4.suffix3', new_list)
 
 class GenerateBlenderFilenameFromURLTest(unittest.TestCase):
     def testGenerateBlenderFileFromURLWorks(self):

@@ -49,15 +49,9 @@ def FilterListBySuffix(items, suffixes):
     suffixes -- the allowed suffixes.
 
     Returns:
-    A list containing only the items whose suffix is contained in suffixes.
+    A generator containing the items whose suffix is contained in suffixes.
     """
-    new_list = []
-    for item in items:
-        for suffix in suffixes:
-            if item.endswith(suffix):
-                new_list.append(item)
-                continue
-    return new_list
+    return (i for i in items if any (s for s in suffixes if i.endswith(s)))
 
 def GenerateBlenderFilenameFromURL(url):
     """Generates a blender filename from a URL.
