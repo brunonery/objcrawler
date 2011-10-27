@@ -22,8 +22,8 @@ class DownloaderThreadTest(unittest.TestCase):
         downloader_thread = DownloaderThread(
             None, 'test/tmp', self.zip_size_limit)
         downloader_thread.HandleZipResource(file_handle)
-        assert os.path.exists('test/tmp/sample.blend')
-        assert not os.path.exists('test/tmp/sample.txt')
+        self.assertTrue(os.path.exists('test/tmp/sample.blend'))
+        self.assertFalse(os.path.exists('test/tmp/sample.txt'))
 
     def testHandleZipResourceIgnoresNonZipFiles(self):
         # Create non-Zip resource.
@@ -54,7 +54,7 @@ class DownloaderThreadTest(unittest.TestCase):
             r.replace('crawler.downloader_thread.DownloadAsTemporaryFile',
                       mock_download_as_temporary_file)
             downloader_thread.HandleZipResource(file_handle)
-            assert not mock_download_as_temporary_file.called
+            self.assertFalse(mock_download_as_temporary_file.called)
     
     def testHandlePlainTextResourceWorks(self):
         downloader_thread = DownloaderThread(None, None, 0)
@@ -73,4 +73,4 @@ class DownloaderThreadTest(unittest.TestCase):
             fake_handle = StringIO.StringIO('')
             fake_handle.url = 'fake.blend'
             downloader_thread.HandleBlenderResource(fake_handle)
-            assert os.path.exists('test/tmp/fake.blend')
+            self.assertTrue(os.path.exists('test/tmp/fake.blend'))

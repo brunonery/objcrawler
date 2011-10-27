@@ -52,13 +52,13 @@ class CrawlerThreadTest(unittest.TestCase):
         crawler_thread = CrawlerThread(
             self.database_handler, None, self.url_lock)
         the_url = crawler_thread.PopNextURLAndMarkAsVisited()
-        assert the_url == 'http://www.google.com/'
+        self.assertEqual('http://www.google.com/', the_url)
         # Test second pop.
         the_url = crawler_thread.PopNextURLAndMarkAsVisited()
-        assert the_url == 'http://www.microsoft.com/'
+        self.assertEqual('http://www.microsoft.com/', the_url)
         # No more pops.
         the_url = crawler_thread.PopNextURLAndMarkAsVisited()
-        assert the_url == None
+        self.assertEqual(None, the_url)
 
     def testPopNextURLAndMarkAsVisitedHandlesCount(self):
         # Populate the test database.
@@ -74,10 +74,10 @@ class CrawlerThreadTest(unittest.TestCase):
         crawler_thread = CrawlerThread(
             self.database_handler, None, self.url_lock)
         the_url = crawler_thread.PopNextURLAndMarkAsVisited()
-        assert the_url == 'http://www.google.com/'
+        self.assertEqual('http://www.google.com/', the_url)
         # Test second pop.
         the_url = crawler_thread.PopNextURLAndMarkAsVisited()
-        assert the_url == 'http://www.microsoft.com/'
+        self.assertEqual('http://www.microsoft.com/', the_url)
 
     def testHandleURLWorks(self):
         mock_download_queue = mock.Mock(Queue.Queue)
@@ -124,8 +124,8 @@ class CrawlerThreadTest(unittest.TestCase):
             mock_can_fetch_url = mock.Mock(return_value=False)
             r.replace('crawler.crawler_thread.CanFetchURL', mock_can_fetch_url)
             crawler_thread.HandleURL('http://www.fake.com/')
-            assert mock_can_fetch_url.called
-            assert not mock_url_open.called
+            self.assertTrue(mock_can_fetch_url.called)
+            self.assertFalse(mock_url_open.called)
 
     def testHandleURLWithXeaWorks(self):
         crawler_thread = CrawlerThread(None, None, None)
@@ -146,9 +146,9 @@ class CrawlerThreadTest(unittest.TestCase):
         crawler_thread.HandleHtmlResource(file_handle)
         session = self.database_handler.CreateSession()
         query = session.query(URL)
-        assert query.filter(URL.url == 'http://www.google.com/').count() == 1
-        assert query.filter(URL.url == 'http://www.microsoft.com/').count() == 1
-        assert query.filter(URL.url == 'http://www.test.com/links.html').count() == 1
+        self.assertEqual(1, query.filter(URL.url == 'http://www.google.com/').count())
+        self.assertEqual(1, query.filter(URL.url == 'http://www.microsoft.com/').count())
+        self.assertEqual(1, query.filter(URL.url == 'http://www.test.com/links.html').count())
 
     def testHandleHtmlResourceIncrementsLinksTo(self):
         # Populate the test database.
@@ -168,6 +168,6 @@ class CrawlerThreadTest(unittest.TestCase):
         crawler_thread.HandleHtmlResource(file_handle)
         query = session.query(URL)
         results = query.filter(URL.url == 'http://www.google.com/')
-        assert results.count() == 1
+        self.assertEqual(1, results.count())
         the_url = results.first()
-        assert the_url.links_to == 1001
+        self.assertEqual(1001, the_url.links_to)

@@ -20,6 +20,6 @@ class SeederConfigTest(unittest.TestCase):
         cref: my_cref
         """))
         config = SeederConfig(file_handle)
-        assert config.database_address() == 'my_database_address'
-        assert config.google_developer_key() == 'my_developer_key'
-        assert config.google_cref() == 'my_cref'
+        self.assertEqual('my_database_address', config.database_address())
+        self.assertEqual('my_developer_key', config.google_developer_key())
+        self.assertEqual('my_cref', config.google_cref())

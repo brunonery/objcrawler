@@ -18,6 +18,6 @@ class CrawlerConfigTest(unittest.TestCase):
         zip_size_limit: 30000
         """))
         config = CrawlerConfig(file_handle)
-        assert config.database_address() == 'my_database_address'
-        assert config.download_folder() == 'my_download_folder'
-        assert config.zip_size_limit() == 30000
+        self.assertEqual('my_database_address', config.database_address())
+        self.assertEqual('my_download_folder', config.download_folder())
+        self.assertEqual(30000, config.zip_size_limit())
