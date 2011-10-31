@@ -84,7 +84,14 @@ def GetLinksFromHtml(file_handle):
     Returns:
     A generator containing the links from the HTML file.
     """
-    soup = BeautifulSoup.BeautifulSoup(file_handle)
+    try:
+        soup = BeautifulSoup.BeautifulSoup(file_handle)
+    except TypeError:
+        # This error is known to be a BeautifulSoup bug and is logged for
+        # statistical reasons.
+        logging.warning('Misbehaving HTML triggered BeautifulSoup bug (%s)',
+                        file_handle.url)
+        return []
     # Check only <a ...> tags with a 'href' attribute, ignoring section links.
     return (link['href'] for link in
             soup.findAll("a", attrs={'href': re.compile('^[^#].*')}))

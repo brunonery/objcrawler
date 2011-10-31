@@ -12,6 +12,7 @@ from crawl_helpers import GetRobotParserForServer
 from crawl_helpers import GetURLPriority
 from crawl_helpers import IsBlenderFile
 
+import io
 import StringIO
 import mock
 import testfixtures
@@ -94,6 +95,13 @@ class GetLinksFromHtmlTest(unittest.TestCase):
     def testSectionMarksAreIgnored(self):
         file_handle = StringIO.StringIO('<a name="section"/>')
         link_list = GetLinksFromHtml(file_handle)
+        self.assertEqual(0, len(list(link_list)))
+
+    def testBeautifulSoupBugWorkedAround(self):
+        with open('test/data/bs_bug.html') as original_file:
+            file_handle = StringIO.StringIO(original_file.read())
+            file_handle.url = 'bs_bug.html'
+            link_list = GetLinksFromHtml(file_handle)
         self.assertEqual(0, len(list(link_list)))
 
 class GetRobotParserForServerTest(unittest.TestCase):
