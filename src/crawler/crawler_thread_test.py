@@ -135,7 +135,7 @@ class CrawlerThreadTest(unittest.TestCase):
     def testHandleHtmlResourceWorks(self):
         # Create test file.
         file_handle = StringIO.StringIO(textwrap.dedent("""
-        <a href='http://www.google.com/'>Google</a>
+        <a href='HTTP://www.google.com/'>Google</a>
         <a href='http://www.microsoft.com/'>Microsoft</a>
         <a href='links.html'>Links</a>
         """))
@@ -171,3 +171,21 @@ class CrawlerThreadTest(unittest.TestCase):
         self.assertEqual(1, results.count())
         the_url = results.first()
         self.assertEqual(1001, the_url.links_to)
+
+    def testHandleHtmlResourceIgnoresNonHttp(self):
+        # Create test file.
+        file_handle = StringIO.StringIO(textwrap.dedent("""
+        <a href='http://www.google.com/'>Google</a>
+        <a href='ftp://ftp.microsoft.com/'>Microsoft</a>
+        <a href='links.html'>Links</a>
+        """))
+        file_handle.url = 'http://www.test.com'
+         # Test handling of HTML resource.
+        crawler_thread = CrawlerThread(
+            self.database_handler, None, self.url_lock)
+        crawler_thread.HandleHtmlResource(file_handle)
+        session = self.database_handler.CreateSession()
+        query = session.query(URL)
+        self.assertEqual(1, query.filter(URL.url == 'http://www.google.com/').count())
+        self.assertEqual(0, query.filter(URL.url == 'ftp://ftp.microsoft.com/').count())
+        self.assertEqual(1, query.filter(URL.url == 'http://www.test.com/links.html').count())

@@ -104,6 +104,8 @@ class CrawlerThread(threading.Thread):
         for link in link_list:
             new_url = URL(urlparse.urljoin(resource.url, link),
                           GetURLPriority(link))
+            if not new_url.url.startswith('http'):
+                continue
             query = session.query(URL)
             result = query.filter(URL.url_md5 == new_url.url_md5)
             if result.count() == 0:
