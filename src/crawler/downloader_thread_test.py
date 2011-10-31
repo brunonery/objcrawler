@@ -49,7 +49,8 @@ class DownloaderThreadTest(unittest.TestCase):
     def testHandleZipResourceIgnoresBigFiles(self):
         # Create non-Zip resource.
         file_handle = io.open('test/data/sample.zip', 'rb')
-        file_handle.headers = {'content-length': str(self.zip_size_limit + 1)} 
+        file_handle.headers = {'content-length': str(self.zip_size_limit + 1)}
+        file_handle.url = 'sample.zip'
         # Test the Zip handler.
         downloader_thread = DownloaderThread(None, None, self.zip_size_limit)
         with testfixtures.Replacer() as r:

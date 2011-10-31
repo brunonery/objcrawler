@@ -34,6 +34,9 @@ class DownloaderThread(threading.Thread):
     def HandleZipResource(self, resource):
         if ('content-length' not in resource.headers or
             int(resource.headers['content-length']) > self.zip_size_limit_):
+            logging.warning(
+                'Zip file is too big or doesn\'t contain size information (%s).',
+                resource.url)
             resource.close()
             return
         file_handle = DownloadAsTemporaryFile(resource)
