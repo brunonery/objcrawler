@@ -13,13 +13,13 @@ def build():
     local('cp config/* build/config/')
     # TODO(brunonery): generate scripts to start/stop all services.
     # Create installation tarball.
-    local('tar caf objcrawler.tar.lzop build/')
+    local('tar caf objcrawler.tar.lzo build/')
     # Remove build tree.
     local('rm -rf build/')
 
 def clean():
     local('find . -name "*.pyc" | xargs rm')
-    local('rm -f objcrawler.tar.lzop')
+    local('rm -f objcrawler.tar.lzo')
     local('rm -f data/objcrawler.db')
     local('rm -rf data/models/*')
     local('rm -f test/tmp/*')
@@ -27,8 +27,8 @@ def clean():
 def deploy():
     run('mkdir -p objcrawler/')
     with cd('objcrawler'):
-        put('objcrawler.tar.lzop', '.')
-        run('tar xaf objcrawler.tar.lzop')
+        put('objcrawler.tar.lzo', '.')
+        run('tar xaf objcrawler.tar.lzo')
 
 def test():
     clean()
