@@ -53,6 +53,9 @@ class DownloaderThread(threading.Thread):
     def HandleBlenderResource(self, resource):
         filename = GenerateBlenderFilenameFromURL(resource.url)
         file_handle = open(os.path.join(self.download_folder_, filename), 'wb')
+        # We write BLENDER to the beginning of the file because IsBlenderFile
+        # advances the stream by 7 characters but urllib2.urlopen objects don't
+        # allow calling seek.
         file_handle.write('BLENDER')
         file_handle.write(resource.read())
         resource.close()
