@@ -10,7 +10,7 @@ import textwrap
 import unittest
 
 class SeederConfigTest(unittest.TestCase):
-    def testSeederConfigWorks(self):
+    def test_seeder_config_works(self):
         file_handle = StringIO.StringIO(textwrap.dedent("""
         [General]
         database_address: my_database_address
