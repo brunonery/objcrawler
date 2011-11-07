@@ -55,7 +55,7 @@ class DownloaderThreadTest(unittest.TestCase):
         downloader_thread = DownloaderThread(None, None, self.zip_size_limit)
         with testfixtures.Replacer() as r:
             mock_download_as_temporary_file = mock.Mock(return_value=file_handle)
-            r.replace('crawler.downloader_thread.DownloadAsTemporaryFile',
+            r.replace('crawler.downloader_thread.download_as_temporary_file',
                       mock_download_as_temporary_file)
             downloader_thread.HandleZipResource(file_handle)
             self.assertFalse(mock_download_as_temporary_file.called)
@@ -65,7 +65,7 @@ class DownloaderThreadTest(unittest.TestCase):
         downloader_thread = DownloaderThread(None, None, 0)
         downloader_thread.HandleBlenderResource = mock.Mock()
         with testfixtures.Replacer() as r:
-            r.replace('crawler.downloader_thread.IsBlenderFile',
+            r.replace('crawler.downloader_thread.is_blender_file',
                       mock.Mock(return_value=True))
             downloader_thread.HandlePlainTextResource(None)
             downloader_thread.HandleBlenderResource.assert_called_with(None)
@@ -73,7 +73,7 @@ class DownloaderThreadTest(unittest.TestCase):
     def testHandleBlenderResourceWorks(self):
         downloader_thread = DownloaderThread(None, 'test/tmp', 0)
         with testfixtures.Replacer() as r:
-            r.replace('crawler.downloader_thread.GenerateBlenderFilenameFromURL',
+            r.replace('crawler.downloader_thread.generate_blender_filename_from_url',
                       mock.Mock(return_value='fake.blend'))
             fake_handle = StringIO.StringIO('')
             fake_handle.url = 'fake.blend'

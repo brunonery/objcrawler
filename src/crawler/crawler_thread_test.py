@@ -122,7 +122,7 @@ class CrawlerThreadTest(unittest.TestCase):
             mock_url_open = mock.Mock()
             r.replace('urllib2.urlopen', mock_url_open)
             mock_can_fetch_url = mock.Mock(return_value=False)
-            r.replace('crawler.crawler_thread.CanFetchURL', mock_can_fetch_url)
+            r.replace('crawler.crawler_thread.can_fetch_url', mock_can_fetch_url)
             crawler_thread.HandleURL('http://www.fake.com/')
             self.assertTrue(mock_can_fetch_url.called)
             self.assertFalse(mock_url_open.called)

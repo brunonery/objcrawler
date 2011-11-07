@@ -3,9 +3,9 @@
 __author__ = "Bruno Nery"
 __email__  = "brunonery@brunonery.com"
 
-from common.crawl_helpers import CanFetchURL
-from common.crawl_helpers import GetLinksFromHtml
-from common.crawl_helpers import GetURLPriority
+from common.crawl_helpers import can_fetch_url
+from common.crawl_helpers import get_links_from_html
+from common.crawl_helpers import get_url_priority
 from models.url import URL
 
 import httplib
@@ -72,7 +72,7 @@ class CrawlerThread(threading.Thread):
         """
         # Avoid fetching URLs not allowed by a robots.txt file.
         # TODO(brunonery): find a way of encode('utf-8') automagically.
-        if not CanFetchURL(url.encode('utf-8')):
+        if not can_fetch_url(url.encode('utf-8')):
             return
         try:
             resource = urllib2.urlopen(url.encode('utf-8'))
@@ -99,13 +99,13 @@ class CrawlerThread(threading.Thread):
         base_url -- the HTML resource URL.
         resource -- the HTML resource to be processed.
         """
-        link_list = GetLinksFromHtml(resource)
+        link_list = get_links_from_html(resource)
         resource.close()
         self.url_lock_.acquire()
         session = self.database_handler_.CreateSession()
         for link in link_list:
             new_url = URL(urlparse.urljoin(resource.url, link),
-                          GetURLPriority(link))
+                          get_url_priority(link))
             if not new_url.url.startswith('http'):
                 continue
             query = session.query(URL)

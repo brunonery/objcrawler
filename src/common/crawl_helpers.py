@@ -14,19 +14,19 @@ import robotparser
 import tempfile
 import urlparse
 
-def CanFetchURL(url):
+def can_fetch_url(url):
     """Tells if can be fetched according to robots.txt."""
     split_url = urlparse.urlsplit(url)
     server_url = urlparse.urlunsplit(
         (split_url.scheme, split_url.netloc, '', '', ''))
-    robot_parser = GetRobotParserForServer(server_url)
+    robot_parser = get_robot_parser_for_server(server_url)
     # If robots.txt cannot be fetched, any URL can be fetched from the server.
     if robot_parser is None:
         return True
     else:
         return robot_parser.can_fetch('*', url)
     
-def DownloadAsTemporaryFile(resource):
+def download_as_temporary_file(resource):
     """Downloads a resource to a temporary file.
 
     Arguments:
@@ -44,7 +44,7 @@ def DownloadAsTemporaryFile(resource):
     file_handle.seek(0)
     return file_handle
 
-def FilterListBySuffix(items, suffixes):
+def filter_list_by_suffix(items, suffixes):
     """Filters a list.
 
     Arguments:
@@ -56,7 +56,7 @@ def FilterListBySuffix(items, suffixes):
     """
     return (i for i in items if any (s for s in suffixes if i.endswith(s)))
 
-def GenerateBlenderFilenameFromURL(url):
+def generate_blender_filename_from_url(url):
     """Generates a blender filename from a URL.
 
     Extracts the filename (minus extension) from the URL, adding the md5 hash
@@ -75,7 +75,7 @@ def GenerateBlenderFilenameFromURL(url):
     m.update(url)
     return name.split('.')[0] + m.hexdigest() + '.blend'
     
-def GetLinksFromHtml(file_handle):
+def get_links_from_html(file_handle):
     """Returns a list with all the links contained in a HTML file.
 
     Arguments:
@@ -97,7 +97,7 @@ def GetLinksFromHtml(file_handle):
             soup.findAll("a", attrs={'href': re.compile('^[^#].*')}))
 
 @lru_cache()
-def GetRobotParserForServer(server_url):
+def get_robot_parser_for_server(server_url):
     """Downloads and parses the robots.txt file for a given server.
 
     Arguments:
@@ -117,7 +117,7 @@ def GetRobotParserForServer(server_url):
         return None
     return robot_parser
   
-def GetURLPriority(url):
+def get_url_priority(url):
     """Obtains a URL priority.
 
     Arguments:
@@ -132,7 +132,7 @@ def GetURLPriority(url):
     else:
         return 2
 
-def IsBlenderFile(file_handle):
+def is_blender_file(file_handle):
     """Tells if a file is a blender one.
 
     Arguments:

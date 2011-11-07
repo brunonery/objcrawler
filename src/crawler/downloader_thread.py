@@ -3,10 +3,10 @@
 __author__ = "Bruno Nery"
 __email__  = "brunonery@brunonery.com"
 
-from common.crawl_helpers import DownloadAsTemporaryFile
-from common.crawl_helpers import FilterListBySuffix
-from common.crawl_helpers import GenerateBlenderFilenameFromURL
-from common.crawl_helpers import IsBlenderFile
+from common.crawl_helpers import download_as_temporary_file
+from common.crawl_helpers import filter_list_by_suffix
+from common.crawl_helpers import generate_blender_filename_from_url
+from common.crawl_helpers import is_blender_file
 
 import logging
 import os
@@ -39,10 +39,10 @@ class DownloaderThread(threading.Thread):
                 resource.url)
             resource.close()
             return
-        file_handle = DownloadAsTemporaryFile(resource)
+        file_handle = download_as_temporary_file(resource)
         try:
             zip_handle = zipfile.ZipFile(file_handle)
-            model_files = FilterListBySuffix(zip_handle.namelist(), ['.blend'])
+            model_files = filter_list_by_suffix(zip_handle.namelist(), ['.blend'])
             for model in model_files:
                 zip_handle.extract(model, self.download_folder_)
         # We catch struct.error because of Python issue #4844.
@@ -50,11 +50,11 @@ class DownloaderThread(threading.Thread):
             logging.warning('Bad zip file: %s.' % (resource.url))
 
     def HandlePlainTextResource(self, resource):
-        if IsBlenderFile(resource):
+        if is_blender_file(resource):
             self.HandleBlenderResource(resource)
 
     def HandleBlenderResource(self, resource):
-        filename = GenerateBlenderFilenameFromURL(resource.url)
+        filename = generate_blender_filename_from_url(resource.url)
         file_handle = open(os.path.join(self.download_folder_, filename), 'wb')
         # We write BLENDER to the beginning of the file because IsBlenderFile
         # advances the stream by 7 characters but urllib2.urlopen objects don't
