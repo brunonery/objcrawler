@@ -48,18 +48,20 @@ class CrawlerThread(threading.Thread):
         biggest link_to count. None if there are no more URLs in the database.
         """
         self.url_lock_.acquire()
-        session = self.database_handler_.CreateSession()
-        query = session.query(URL)
-        results = query.filter(URL.visited == False).order_by(
-            URL.priority, URL.links_to.desc())
-        url_record = results.first()
-        if url_record:
-            url_record.visited = True
-            the_url = url_record.url
-            session.commit()
-        else:
-            the_url = None
-        self.url_lock_.release()
+        try:
+            session = self.database_handler_.CreateSession()
+            query = session.query(URL)
+            results = query.filter(URL.visited == False).order_by(
+                URL.priority, URL.links_to.desc())
+            url_record = results.first()
+            if url_record:
+                url_record.visited = True
+                the_url = url_record.url
+                session.commit()
+            else:
+                the_url = None
+        finally:
+            self.url_lock_.release()
         return the_url
 
     def HandleURL(self, url):
