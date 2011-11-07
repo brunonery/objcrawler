@@ -26,12 +26,12 @@ class DownloaderThread(threading.Thread):
             resource = self.download_queue_.get()
             content_type = resource.headers['content-type']
             if content_type.startswith('application/zip'):
-                self.HandleZipResource(resource)
+                self.handle_zip_resource(resource)
             elif content_type.startswith('text/plain'):
-                self.HandlePlainTextResource(resource)
+                self.handle_plain_text_resource(resource)
             self.download_queue_.task_done()
 
-    def HandleZipResource(self, resource):
+    def handle_zip_resource(self, resource):
         if ('content-length' not in resource.headers or
             int(resource.headers['content-length']) > self.zip_size_limit_):
             logging.warning(
@@ -49,11 +49,11 @@ class DownloaderThread(threading.Thread):
         except (zipfile.BadZipfile, struct.error):
             logging.warning('Bad zip file: %s.' % (resource.url))
 
-    def HandlePlainTextResource(self, resource):
+    def handle_plain_text_resource(self, resource):
         if is_blender_file(resource):
-            self.HandleBlenderResource(resource)
+            self.handle_blender_resource(resource)
 
-    def HandleBlenderResource(self, resource):
+    def handle_blender_resource(self, resource):
         filename = generate_blender_filename_from_url(resource.url)
         file_handle = open(os.path.join(self.download_folder_, filename), 'wb')
         # We write BLENDER to the beginning of the file because IsBlenderFile
