@@ -3,7 +3,7 @@
 __author__ = "Bruno Nery"
 __email__  = "brunonery@brunonery.com"
 
-from google_helper import GoogleSearch
+from google_helper import google_search
 
 import mock
 import pickle
@@ -26,26 +26,26 @@ class GoogleApiMock():
         return response
 
 class GoogleSearchTest(unittest.TestCase):
-    def testGoogleSearchWorks(self):
+    def test_google_search_works(self):
         with testfixtures.Replacer() as r:
             r.replace('apiclient.discovery.build', mock.Mock(return_value=GoogleApiMock()))
-            search_results = GoogleSearch(
+            search_results = google_search(
                 'AIzaSyCrGh4R7a7-ayRQyh7nXPwuBy6O7F0VqRM',
                 '017513622067795982245:_iwk5xznrk0',
                 'google')
             assert len(filter(lambda r: r.link == 'http://www.google.com/',
                               search_results)) > 0
 
-    def testGoogleSearchWithMaxResultsWork(self):
+    def test_google_search_with_max_results_work(self):
         with testfixtures.Replacer() as r:
             r.replace('apiclient.discovery.build', mock.Mock(return_value=GoogleApiMock()))
-            search_results = GoogleSearch(
+            search_results = google_search(
                 'AIzaSyCrGh4R7a7-ayRQyh7nXPwuBy6O7F0VqRM',
                 '017513622067795982245:_iwk5xznrk0',
                 'google',
                 max_results=20)
             assert len(search_results) <= 20
-            search_results = GoogleSearch(
+            search_results = google_search(
                 'AIzaSyCrGh4R7a7-ayRQyh7nXPwuBy6O7F0VqRM',
                 '017513622067795982245:_iwk5xznrk0',
                 'google',

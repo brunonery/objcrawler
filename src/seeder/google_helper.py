@@ -9,7 +9,7 @@ import math
 
 SearchResult = collections.namedtuple('SearchResult', 'title snippet link')
 
-def GoogleSearch(developer_key, cref, query, max_results=10):
+def google_search(developer_key, cref, query, max_results=10):
     """Performs a web search using Google.
 
     Arguments:
