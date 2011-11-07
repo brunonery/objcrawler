@@ -4,7 +4,7 @@ __author__ = "Bruno Nery"
 __email__  = "brunonery@brunonery.com"
 
 from common.database_handler import DatabaseHandler
-from google_helper import GoogleSearch
+from google_helper import google_search
 from models.url import URL
 from seeder_config import SeederConfig
 
@@ -17,7 +17,7 @@ parser.add_argument('--query', action='store', type=str)
 parser.add_argument('--max_results', action='store', type=int, default=10)
 parser.add_argument('--source_file', action='store', type=str)
 
-def SeedWithGoogle(config, query, max_results):
+def seed_with_google(config, query, max_results):
     """Seeds the database using the results from a Google Search.
 
     Arguments:
@@ -26,19 +26,19 @@ def SeedWithGoogle(config, query, max_results):
     max_results -- the maximum number of results.
     """
     # Obtain the search results.
-    search_results = GoogleSearch(
+    search_results = google_search(
         config.google_developer_key(), config.google_cref(), query, max_results)
     # Prepare the database.
     database_handler = DatabaseHandler(config.database_address())
-    database_handler.Init()
+    database_handler.init()
     # Add the results to the database.
-    session = database_handler.CreateSession()
+    session = database_handler.create_session()
     for result in search_results:
         # Seed results always have the highest priority.
         session.add(URL(result.link, 0))
     session.commit()
 
-def SeedWithList(config, filename):
+def seed_with_list(config, filename):
     """Seeds the database using the links from a text file.
 
     Arguments:
@@ -50,9 +50,9 @@ def SeedWithList(config, filename):
     f.close()
     # Prepare the database.
     database_handler = DatabaseHandler(config.database_address())
-    database_handler.Init()
+    database_handler.init()
     # Add the results to the database.
-    session = database_handler.CreateSession()
+    session = database_handler.create_session()
     for link in link_list:
         # Seed results always have the highest priority.
         session.add(URL(link, 0))
@@ -63,6 +63,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
     config = SeederConfig(open(args.config))
     if args.use_google:
-        SeedWithGoogle(config, args.query, args.max_results)
+        seed_with_google(config, args.query, args.max_results)
     else:
-        SeedWithList(config, args.source_file)
+        seed_with_list(config, args.source_file)
