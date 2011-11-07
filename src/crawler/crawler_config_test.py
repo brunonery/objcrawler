@@ -10,7 +10,7 @@ import textwrap
 import unittest
 
 class CrawlerConfigTest(unittest.TestCase):
-    def testCrawlerConfigWorks(self):
+    def test_crawler_config_works(self):
         file_handle = StringIO.StringIO(textwrap.dedent("""
         [General]
         database_address: my_database_address
