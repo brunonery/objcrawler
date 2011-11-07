@@ -23,7 +23,7 @@ if __name__ == "__main__":
     config = CrawlerConfig(open(args.config))
     # Prepare database and locks.
     database_handler = DatabaseHandler(config.database_address())
-    database_handler.Init()
+    database_handler.init()
     url_lock = threading.Lock()
     # Prepare download queue.
     download_queue = Queue.Queue()
