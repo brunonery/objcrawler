@@ -19,7 +19,7 @@ import textwrap
 import unittest
 import urllib2
 
-def MockURLOpenWithException(exception, url):
+def mock_url_open_with_exception(exception, url):
     """Mock for urllib2.urlopen that throws an exception.
 
     Throws the specified exception when called. Should be built using
@@ -30,7 +30,7 @@ def MockURLOpenWithException(exception, url):
     elif exception == 'URLError':
         raise urllib2.URLError('')
 
-def CreateFakeURLResource(type):
+def create_fake_url_resource(type):
     URLResource = collections.namedtuple('URLResource', ['headers'])
     resource = URLResource(headers={'content-type': type})
     return resource
@@ -42,7 +42,7 @@ class CrawlerThreadTest(unittest.TestCase):
         self.database_handler.init()
         self.url_lock = threading.Lock()
         
-    def testPopNextURLAndMarkAsVisited(self):
+    def test_pop_next_url_and_mark_as_visited_works(self):
         # Populate the test database.
         session = self.database_handler.create_session()
         session.add(URL('http://www.microsoft.com/', 2))
@@ -51,16 +51,16 @@ class CrawlerThreadTest(unittest.TestCase):
          # Test pop.
         crawler_thread = CrawlerThread(
             self.database_handler, None, self.url_lock)
-        the_url = crawler_thread.PopNextURLAndMarkAsVisited()
+        the_url = crawler_thread.pop_next_url_and_mark_as_visited()
         self.assertEqual('http://www.google.com/', the_url)
         # Test second pop.
-        the_url = crawler_thread.PopNextURLAndMarkAsVisited()
+        the_url = crawler_thread.pop_next_url_and_mark_as_visited()
         self.assertEqual('http://www.microsoft.com/', the_url)
         # No more pops.
-        the_url = crawler_thread.PopNextURLAndMarkAsVisited()
+        the_url = crawler_thread.pop_next_url_and_mark_as_visited()
         self.assertEqual(None, the_url)
 
-    def testPopNextURLAndMarkAsVisitedHandlesCount(self):
+    def test_pop_next_url_and_mark_as_visited_handles_count(self):
         # Populate the test database.
         session = self.database_handler.create_session()
         the_url = URL('http://www.microsoft.com/', 1)
@@ -73,66 +73,66 @@ class CrawlerThreadTest(unittest.TestCase):
          # Test pop.
         crawler_thread = CrawlerThread(
             self.database_handler, None, self.url_lock)
-        the_url = crawler_thread.PopNextURLAndMarkAsVisited()
+        the_url = crawler_thread.pop_next_url_and_mark_as_visited()
         self.assertEqual('http://www.google.com/', the_url)
         # Test second pop.
-        the_url = crawler_thread.PopNextURLAndMarkAsVisited()
+        the_url = crawler_thread.pop_next_url_and_mark_as_visited()
         self.assertEqual('http://www.microsoft.com/', the_url)
 
-    def testHandleURLWorks(self):
+    def test_handle_url_works(self):
         mock_download_queue = mock.Mock(Queue.Queue)
         crawler_thread = CrawlerThread(None, mock_download_queue, None)
-        crawler_thread.HandleHtmlResource = mock.Mock()
+        crawler_thread.handle_html_resource = mock.Mock()
         with testfixtures.Replacer() as r:
             # HTML resource.
-            html_resource = CreateFakeURLResource('text/html')
+            html_resource = create_fake_url_resource('text/html')
             r.replace('urllib2.urlopen', mock.Mock(return_value=html_resource))
-            crawler_thread.HandleURL('http://www.fake.com/')
-            crawler_thread.HandleHtmlResource.assert_called_with(html_resource)
+            crawler_thread.handle_url('http://www.fake.com/')
+            crawler_thread.handle_html_resource.assert_called_with(html_resource)
             # Zip resource.
-            zip_resource = CreateFakeURLResource('application/zip')
+            zip_resource = create_fake_url_resource('application/zip')
             r.replace('urllib2.urlopen', mock.Mock(return_value=zip_resource))
-            crawler_thread.HandleURL('http://www.fake.com/')
+            crawler_thread.handle_url('http://www.fake.com/')
             mock_download_queue.put.assert_called_with(zip_resource)
             # Plain text resource.
-            text_resource = CreateFakeURLResource('text/plain')
+            text_resource = create_fake_url_resource('text/plain')
             r.replace('urllib2.urlopen', mock.Mock(return_value=text_resource))
-            crawler_thread.HandleURL('http://www.fake.com/')
+            crawler_thread.handle_url('http://www.fake.com/')
             mock_download_queue.put.assert_called_with(text_resource)
 
-    def testHandleURLIgnoreBadStatusLine(self):
+    def test_handle_url_ignores_bad_status_line(self):
         crawler_thread = CrawlerThread(None, None, None)
         with testfixtures.Replacer() as r:
             r.replace('urllib2.urlopen',
-                      functools.partial(MockURLOpenWithException,
+                      functools.partial(mock_url_open_with_exception,
                                         'BadStatusLine'))
-            crawler_thread.HandleURL('http://www.fake.com/')
+            crawler_thread.handle_url('http://www.fake.com/')
 
-    def testHandleURLIgnoreURLError(self):
+    def test_handle_url_ignores_url_error(self):
         crawler_thread = CrawlerThread(None, None, None)
         with testfixtures.Replacer() as r:
             r.replace('urllib2.urlopen',
-                      functools.partial(MockURLOpenWithException,
+                      functools.partial(mock_url_open_with_exception,
                                         'URLError'))
-            crawler_thread.HandleURL('http://www.fake.com/')
+            crawler_thread.handle_url('http://www.fake.com/')
 
-    def testHandleURLIgnoreNonFetchableURL(self):
+    def test_handle_url_ignores_non_fetchable_url(self):
         crawler_thread = CrawlerThread(None, None, None)
         with testfixtures.Replacer() as r:
             mock_url_open = mock.Mock()
             r.replace('urllib2.urlopen', mock_url_open)
             mock_can_fetch_url = mock.Mock(return_value=False)
             r.replace('crawler.crawler_thread.can_fetch_url', mock_can_fetch_url)
-            crawler_thread.HandleURL('http://www.fake.com/')
+            crawler_thread.handle_url('http://www.fake.com/')
             self.assertTrue(mock_can_fetch_url.called)
             self.assertFalse(mock_url_open.called)
 
-    def testHandleURLWithXeaWorks(self):
+    def test_handle_url_with_xea_works(self):
         crawler_thread = CrawlerThread(None, None, None)
-        crawler_thread.HandleURL(u'http://\xea')
+        crawler_thread.handle_url(u'http://\xea')
         # TODO(brunonery): add assert for logging.
 
-    def testHandleHtmlResourceWorks(self):
+    def test_handle_html_resource_works(self):
         # Create test file.
         file_handle = StringIO.StringIO(textwrap.dedent("""
         <a href='HTTP://www.google.com/'>Google</a>
@@ -143,14 +143,14 @@ class CrawlerThreadTest(unittest.TestCase):
          # Test handling of HTML resource.
         crawler_thread = CrawlerThread(
             self.database_handler, None, self.url_lock)
-        crawler_thread.HandleHtmlResource(file_handle)
+        crawler_thread.handle_html_resource(file_handle)
         session = self.database_handler.create_session()
         query = session.query(URL)
         self.assertEqual(1, query.filter(URL.url == 'http://www.google.com/').count())
         self.assertEqual(1, query.filter(URL.url == 'http://www.microsoft.com/').count())
         self.assertEqual(1, query.filter(URL.url == 'http://www.test.com/links.html').count())
 
-    def testHandleHtmlResourceIncrementsLinksTo(self):
+    def test_handle_html_resource_increment_links_to(self):
         # Populate the test database.
         session = self.database_handler.create_session()
         the_url = URL('http://www.google.com/', 1)
@@ -165,14 +165,14 @@ class CrawlerThreadTest(unittest.TestCase):
         # Test handling of HTML resource.
         crawler_thread = CrawlerThread(
             self.database_handler, None, self.url_lock)
-        crawler_thread.HandleHtmlResource(file_handle)
+        crawler_thread.handle_html_resource(file_handle)
         query = session.query(URL)
         results = query.filter(URL.url == 'http://www.google.com/')
         self.assertEqual(1, results.count())
         the_url = results.first()
         self.assertEqual(1001, the_url.links_to)
 
-    def testHandleHtmlResourceIgnoresNonHttp(self):
+    def test_handle_html_ignores_non_http(self):
         # Create test file.
         file_handle = StringIO.StringIO(textwrap.dedent("""
         <a href='http://www.google.com/'>Google</a>
@@ -183,7 +183,7 @@ class CrawlerThreadTest(unittest.TestCase):
          # Test handling of HTML resource.
         crawler_thread = CrawlerThread(
             self.database_handler, None, self.url_lock)
-        crawler_thread.HandleHtmlResource(file_handle)
+        crawler_thread.handle_html_resource(file_handle)
         session = self.database_handler.create_session()
         query = session.query(URL)
         self.assertEqual(1, query.filter(URL.url == 'http://www.google.com/').count())

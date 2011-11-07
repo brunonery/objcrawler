@@ -32,15 +32,15 @@ class CrawlerThread(threading.Thread):
 
     def run(self):
         while True:
-            next_url = self.PopNextURLAndMarkAsVisited()
+            next_url = self.pop_next_url_and_mark_as_visited()
             # No more URLs to be visited.
             if next_url is None:
                 break
-            self.HandleURL(next_url)
+            self.handle_url(next_url)
         # Wait for all remaining items to be processed.
         self.download_queue_.join()
 
-    def PopNextURLAndMarkAsVisited(self):
+    def pop_next_url_and_mark_as_visited(self):
         """Get the next URL to be visited and mark it as visited.
         
         Returns:
@@ -64,7 +64,7 @@ class CrawlerThread(threading.Thread):
             self.url_lock_.release()
         return the_url
 
-    def HandleURL(self, url):
+    def handle_url(self, url):
         """Obtain URL resource and handle it according to type.
 
         Arguments:
@@ -86,13 +86,13 @@ class CrawlerThread(threading.Thread):
             return
         content_type = resource.headers['content-type']
         if content_type.startswith('text/html'):
-            self.HandleHtmlResource(resource)
+            self.handle_html_resource(resource)
         elif content_type.startswith('application/zip'):
             self.download_queue_.put(resource)
         elif content_type.startswith('text/plain'):
             self.download_queue_.put(resource)
 
-    def HandleHtmlResource(self, resource):
+    def handle_html_resource(self, resource):
         """Extract links from HTML resource and add them to the database.
 
         Arguments:
