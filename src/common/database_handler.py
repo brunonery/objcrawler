@@ -19,9 +19,9 @@ class DatabaseHandler():
         self.engine_ = sqlalchemy.create_engine(database_address)
         self.session_maker_ = sqlalchemy.orm.sessionmaker(bind=self.engine_)
 
-    def Init(self):
+    def init(self):
         # Create all tables that don't exist.
         Base.metadata.create_all(self.engine_)
 
-    def CreateSession(self):
+    def create_session(self):
         return self.session_maker_()

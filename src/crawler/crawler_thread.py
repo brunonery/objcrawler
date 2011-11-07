@@ -49,7 +49,7 @@ class CrawlerThread(threading.Thread):
         """
         self.url_lock_.acquire()
         try:
-            session = self.database_handler_.CreateSession()
+            session = self.database_handler_.create_session()
             query = session.query(URL)
             results = query.filter(URL.visited == False).order_by(
                 URL.priority, URL.links_to.desc())
@@ -102,7 +102,7 @@ class CrawlerThread(threading.Thread):
         link_list = get_links_from_html(resource)
         resource.close()
         self.url_lock_.acquire()
-        session = self.database_handler_.CreateSession()
+        session = self.database_handler_.create_session()
         for link in link_list:
             new_url = URL(urlparse.urljoin(resource.url, link),
                           get_url_priority(link))

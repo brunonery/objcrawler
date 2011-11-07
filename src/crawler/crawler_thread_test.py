@@ -39,12 +39,12 @@ class CrawlerThreadTest(unittest.TestCase):
     def setUp(self):
         # Create test database and lock.
         self.database_handler = DatabaseHandler('sqlite:///:memory:')
-        self.database_handler.Init()
+        self.database_handler.init()
         self.url_lock = threading.Lock()
         
     def testPopNextURLAndMarkAsVisited(self):
         # Populate the test database.
-        session = self.database_handler.CreateSession()
+        session = self.database_handler.create_session()
         session.add(URL('http://www.microsoft.com/', 2))
         session.add(URL('http://www.google.com/', 1))
         session.commit()
@@ -62,7 +62,7 @@ class CrawlerThreadTest(unittest.TestCase):
 
     def testPopNextURLAndMarkAsVisitedHandlesCount(self):
         # Populate the test database.
-        session = self.database_handler.CreateSession()
+        session = self.database_handler.create_session()
         the_url = URL('http://www.microsoft.com/', 1)
         the_url.links_to = 500
         session.add(the_url)
@@ -144,7 +144,7 @@ class CrawlerThreadTest(unittest.TestCase):
         crawler_thread = CrawlerThread(
             self.database_handler, None, self.url_lock)
         crawler_thread.HandleHtmlResource(file_handle)
-        session = self.database_handler.CreateSession()
+        session = self.database_handler.create_session()
         query = session.query(URL)
         self.assertEqual(1, query.filter(URL.url == 'http://www.google.com/').count())
         self.assertEqual(1, query.filter(URL.url == 'http://www.microsoft.com/').count())
@@ -152,7 +152,7 @@ class CrawlerThreadTest(unittest.TestCase):
 
     def testHandleHtmlResourceIncrementsLinksTo(self):
         # Populate the test database.
-        session = self.database_handler.CreateSession()
+        session = self.database_handler.create_session()
         the_url = URL('http://www.google.com/', 1)
         the_url.links_to = 1000
         session.add(the_url)
@@ -184,7 +184,7 @@ class CrawlerThreadTest(unittest.TestCase):
         crawler_thread = CrawlerThread(
             self.database_handler, None, self.url_lock)
         crawler_thread.HandleHtmlResource(file_handle)
-        session = self.database_handler.CreateSession()
+        session = self.database_handler.create_session()
         query = session.query(URL)
         self.assertEqual(1, query.filter(URL.url == 'http://www.google.com/').count())
         self.assertEqual(0, query.filter(URL.url == 'ftp://ftp.microsoft.com/').count())
